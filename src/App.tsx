@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth, Role } from "./lib/auth";
 import { PublicHeader } from "./components/PublicHeader";
+import { InstallPrompt } from "./components/InstallPrompt";
 import { Home } from "./pages/Home";
 import { AuthClient } from "./pages/AuthClient";
 import { CommanderGaz } from "./pages/CommanderGaz";
@@ -88,6 +89,7 @@ function AppRoutes() {
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <InstallPrompt />
     </>
   );
 }
