@@ -132,10 +132,14 @@ export function CommanderGaz() {
           {produits.length === 0 ? (
             <p className="text-sm text-ink/40">Aucun produit disponible pour le moment.</p>
           ) : (
-            produits.map((p) => {
+            produits.map((p, i) => {
               const enRupture = p.totalDisponible === 0;
               return (
-                <Card key={p.id} className={`p-4 ${enRupture ? "opacity-60" : ""}`}>
+                <Card
+                  key={p.id}
+                  className={`animate-slide-up p-4 ${enRupture ? "opacity-60" : "hover:-translate-y-0.5 hover:shadow-md"}`}
+                  style={{ animationDelay: `${Math.min(i, 6) * 0.05}s` }}
+                >
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="font-display text-base font-semibold text-ink">
@@ -289,7 +293,7 @@ export function CommanderGaz() {
       {panier && etape === "produits" && (
         <button
           onClick={() => setEtape("livraison")}
-          className="fixed bottom-4 left-1/2 flex w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 items-center justify-between rounded-lg bg-panel px-5 py-4 text-white shadow-xl"
+          className="fixed bottom-4 left-1/2 flex w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 animate-slide-up items-center justify-between rounded-lg bg-panel px-5 py-4 text-white shadow-xl transition-transform hover:scale-[1.02]"
         >
           <span className="text-sm">
             {panier.quantite} × {panier.produit.nom} — {panier.produit.taille}

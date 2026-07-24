@@ -1,38 +1,65 @@
 import { Link } from "react-router-dom";
 
+function BouteilleFlottante({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 160 160"
+      className={`animate-float ${className}`}
+      style={{ animationDelay: "0.3s" }}
+    >
+      <rect x="66" y="30" width="28" height="14" rx="3" fill="#5B93AC" />
+      <rect x="72" y="20" width="16" height="10" rx="2" fill="#5B93AC" />
+      <path
+        d="M 56 56 Q 56 44 80 44 Q 104 44 104 56 L 104 122 Q 104 136 80 136 Q 56 136 56 122 Z"
+        fill="#D4661E"
+      />
+      <rect x="56" y="86" width="48" height="9" fill="#14232B" opacity="0.15" />
+    </svg>
+  );
+}
+
 export function Home() {
   return (
     <div>
       {/* Hero */}
-      <section className="bg-panel px-6 py-20 text-white">
-        <div className="mx-auto max-w-4xl text-center">
-          <div className="font-display text-4xl font-bold tracking-tight sm:text-5xl">
+      <section className="relative overflow-hidden bg-panel px-6 py-20 text-white">
+        <BouteilleFlottante className="pointer-events-none absolute -right-4 top-8 hidden w-32 opacity-80 sm:block" />
+        <BouteilleFlottante className="pointer-events-none absolute -left-8 bottom-4 hidden w-20 opacity-40 sm:block" />
+
+        <div className="relative mx-auto max-w-4xl text-center">
+          <div className="animate-fade-in font-display text-4xl font-bold tracking-tight sm:text-5xl">
             PROXI<span className="text-safety-400">GAZ</span>
           </div>
-          <p className="mt-4 text-lg text-white/70">
+          <p className="mt-4 animate-fade-in text-lg text-white/70" style={{ animationDelay: "0.1s" }}>
             Votre bouteille de gaz livrée chez vous. Votre poubelle ramassée en un clic.
           </p>
-          <p className="mx-auto mt-2 max-w-xl text-sm text-white/50">
+          <p
+            className="mx-auto mt-2 max-w-xl animate-fade-in text-sm text-white/50"
+            style={{ animationDelay: "0.2s" }}
+          >
             Fini les longs trajets avec une bouteille vide en main — commandez votre recharge de
             gaz et un ramassage de poubelle depuis votre téléphone, à Abidjan et environs.
           </p>
 
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <div
+            className="mt-8 flex animate-fade-in flex-wrap items-center justify-center gap-3"
+            style={{ animationDelay: "0.3s" }}
+          >
             <Link
               to="/commander-gaz"
-              className="rounded-md bg-safety-500 px-6 py-3 text-sm font-semibold text-white hover:bg-safety-600"
+              className="rounded-md bg-safety-500 px-6 py-3 text-sm font-semibold text-white transition-all hover:scale-105 hover:bg-safety-600"
             >
               Commander du gaz
             </Link>
             <Link
               to="/demander-ramassage"
-              className="rounded-md bg-gaz-500 px-6 py-3 text-sm font-semibold text-white hover:bg-gaz-600"
+              className="rounded-md bg-gaz-500 px-6 py-3 text-sm font-semibold text-white transition-all hover:scale-105 hover:bg-gaz-600"
             >
               Demander un ramassage
             </Link>
             <Link
               to="/pro"
-              className="rounded-md border border-white/20 px-6 py-3 text-sm font-semibold text-white/90 hover:bg-white/10"
+              className="rounded-md border border-white/20 px-6 py-3 text-sm font-semibold text-white/90 transition-all hover:scale-105 hover:bg-white/10"
             >
               Espace professionnel
             </Link>
@@ -46,7 +73,7 @@ export function Home() {
           Comment ça marche
         </h2>
         <div className="mt-10 grid gap-8 sm:grid-cols-2">
-          <div className="rounded-xl border border-ink/10 bg-white p-6">
+          <div className="animate-slide-up rounded-xl border border-ink/10 bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-lg">
             <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-safety-400/15 font-display text-lg font-bold text-safety-500">
               1
             </div>
@@ -56,7 +83,10 @@ export function Home() {
               et une boutique partenaire proche de chez vous confirme et livre votre commande.
             </p>
           </div>
-          <div className="rounded-xl border border-ink/10 bg-white p-6">
+          <div
+            className="animate-slide-up rounded-xl border border-ink/10 bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-lg"
+            style={{ animationDelay: "0.1s" }}
+          >
             <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-gaz-400/15 font-display text-lg font-bold text-gaz-500">
               2
             </div>
@@ -81,16 +111,12 @@ export function Home() {
           </p>
           <Link
             to="/pro"
-            className="mt-6 inline-block rounded-md bg-steel-500 px-6 py-3 text-sm font-semibold text-white hover:bg-steel-600"
+            className="mt-6 inline-block rounded-md bg-steel-500 px-6 py-3 text-sm font-semibold text-white transition-all hover:scale-105 hover:bg-steel-600"
           >
             Accéder à mon espace professionnel
           </Link>
         </div>
       </section>
-
-      <footer className="border-t border-ink/10 px-6 py-8 text-center text-xs text-ink/40">
-        ProxiGaz — un service Compagnie des Services Numériques (CSN) — Abidjan, Côte d'Ivoire
-      </footer>
     </div>
   );
 }

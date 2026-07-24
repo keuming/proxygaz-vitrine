@@ -34,6 +34,41 @@ export default {
         body: ["Inter", "sans-serif"],
         data: ["IBM Plex Mono", "monospace"],
       },
+      keyframes: {
+        fadeIn: {
+          "0%": { opacity: "0", transform: "translateY(8px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        slideUp: {
+          "0%": { opacity: "0", transform: "translateY(24px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        scaleIn: {
+          "0%": { opacity: "0", transform: "scale(0.9)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
+        pulseSoft: {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.55" },
+        },
+        checkPop: {
+          "0%": { transform: "scale(0)" },
+          "60%": { transform: "scale(1.25)" },
+          "100%": { transform: "scale(1)" },
+        },
+      },
+      animation: {
+        "fade-in": "fadeIn 0.5s ease-out both",
+        "slide-up": "slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both",
+        "scale-in": "scaleIn 0.3s ease-out both",
+        float: "float 4s ease-in-out infinite",
+        "pulse-soft": "pulseSoft 1.8s ease-in-out infinite",
+        "check-pop": "checkPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both",
+      },
     },
   },
   plugins: [],

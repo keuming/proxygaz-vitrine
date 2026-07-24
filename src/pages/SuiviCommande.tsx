@@ -84,26 +84,30 @@ export function SuiviCommande() {
           )}
         </Card>
       ) : (
-        <Card className="p-6">
+        <Card className="animate-scale-in p-6">
           <div className="mb-6 flex items-start justify-between">
-            {ETAPES.map((e, i) => (
-              <div key={e.statut} className="flex flex-1 flex-col items-center">
-                <div
-                  className={`mb-2 flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold ${
-                    i <= indexActuel ? "bg-gaz-500 text-white" : "bg-ink/10 text-ink/40"
-                  }`}
-                >
-                  {i < indexActuel ? "✓" : i + 1}
+            {ETAPES.map((e, i) => {
+              const validee = i < indexActuel;
+              const active = i === indexActuel;
+              return (
+                <div key={e.statut} className="flex flex-1 flex-col items-center">
+                  <div
+                    className={`mb-2 flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold transition-colors duration-300 ${
+                      i <= indexActuel ? "bg-gaz-500 text-white" : "bg-ink/10 text-ink/40"
+                    } ${validee ? "animate-check-pop" : ""} ${active ? "animate-pulse-soft" : ""}`}
+                  >
+                    {validee ? "✓" : i + 1}
+                  </div>
+                  <span
+                    className={`text-center text-[11px] leading-tight transition-colors ${
+                      i <= indexActuel ? "font-medium text-ink" : "text-ink/40"
+                    }`}
+                  >
+                    {e.label}
+                  </span>
                 </div>
-                <span
-                  className={`text-center text-[11px] leading-tight ${
-                    i <= indexActuel ? "font-medium text-ink" : "text-ink/40"
-                  }`}
-                >
-                  {e.label}
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
           <div className="h-px w-full bg-ink/10" />
 

@@ -38,7 +38,7 @@ export function InstallPrompt() {
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-4 left-1/2 z-40 flex w-[calc(100%-2rem)] max-w-md -translate-x-1/2 items-center justify-between gap-3 rounded-lg bg-panel px-4 py-3 text-white shadow-xl">
+    <div className="fixed bottom-4 left-1/2 z-40 flex w-[calc(100%-2rem)] max-w-md -translate-x-1/2 animate-slide-up items-center justify-between gap-3 rounded-lg bg-panel px-4 py-3 text-white shadow-xl">
       <div className="text-sm">
         <div className="font-medium">Installer ProxiGaz</div>
         <div className="text-xs text-white/60">Accès rapide depuis votre écran d'accueil</div>
