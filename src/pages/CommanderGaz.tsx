@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { trpcQuery, trpcMutation } from "../lib/api";
 import { Card } from "../components/Card";
+import { AddressPicker, AdresseChoisie } from "../components/AddressPicker";
 
 interface Boutique {
   id: string;
@@ -39,6 +40,8 @@ export function CommanderGaz() {
 
   // Étape 3 : livraison
   const [adresse, setAdresse] = useState("");
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
   const [notes, setNotes] = useState("");
   const [envoiEnCours, setEnvoiEnCours] = useState(false);
 
@@ -73,6 +76,8 @@ export function CommanderGaz() {
         boutiqueId: boutiqueChoisie.id,
         quantite,
         adresseLivraison: adresse,
+        latitude: latitude ?? undefined,
+        longitude: longitude ?? undefined,
         notes: notes || undefined,
       });
       navigate(`/commande/${commande.id}`);
@@ -212,13 +217,16 @@ export function CommanderGaz() {
           </div>
 
           <label className="mb-2 block text-sm font-medium text-ink/70">Adresse de livraison</label>
-          <input
-            value={adresse}
-            onChange={(e) => setAdresse(e.target.value)}
-            placeholder="Rue, quartier, commune..."
-            className="mb-4 w-full rounded-md border border-ink/15 px-3 py-2 text-sm focus:border-steel-500"
-            required
-          />
+          <div className="mb-4">
+            <AddressPicker
+              valeur={adresse}
+              onChange={(a: AdresseChoisie) => {
+                setAdresse(a.adresse);
+                setLatitude(a.latitude);
+                setLongitude(a.longitude);
+              }}
+            />
+          </div>
 
           <label className="mb-2 block text-sm font-medium text-ink/70">Notes (optionnel)</label>
           <textarea
