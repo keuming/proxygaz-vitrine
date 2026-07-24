@@ -6,6 +6,7 @@ import { AuthClient } from "./pages/AuthClient";
 import { CommanderGaz } from "./pages/CommanderGaz";
 import { DemanderRamassage } from "./pages/DemanderRamassage";
 import { MesCommandes } from "./pages/MesCommandes";
+import { SuiviCommande } from "./pages/SuiviCommande";
 import { LoginPro } from "./pages/LoginPro";
 import { InscriptionPro } from "./pages/InscriptionPro";
 import { DashboardBoutique } from "./pages/pro/DashboardBoutique";
@@ -62,6 +63,14 @@ function AppRoutes() {
           element={
             <RequireRole role="client">
               <MesCommandes />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/commande/:id"
+          element={
+            <RequireRole role="client">
+              <SuiviCommande />
             </RequireRole>
           }
         />

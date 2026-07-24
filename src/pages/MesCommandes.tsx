@@ -66,18 +66,20 @@ export function MesCommandes() {
           <p className="text-sm text-ink/40">Aucune commande de gaz pour le moment.</p>
         ) : (
           commandes.map((c) => (
-            <Card key={c.id} className="p-4">
-              <div className="mb-2 flex items-start justify-between">
-                <div>
-                  <div className="text-sm font-medium text-ink">{c.adresseLivraison}</div>
-                  <div className="text-xs text-ink/50">Quantité : {c.quantite}</div>
+            <Link key={c.id} to={`/commande/${c.id}`} className="block">
+              <Card className="p-4 transition-colors hover:border-steel-400">
+                <div className="mb-2 flex items-start justify-between">
+                  <div>
+                    <div className="text-sm font-medium text-ink">{c.adresseLivraison}</div>
+                    <div className="text-xs text-ink/50">Quantité : {c.quantite}</div>
+                  </div>
+                  <StatusGauge statut={c.statut} />
                 </div>
-                <StatusGauge statut={c.statut} />
-              </div>
-              <div className="font-data text-sm font-semibold text-ink">
-                {Number(c.prixTotal).toLocaleString()} FCFA
-              </div>
-            </Card>
+                <div className="font-data text-sm font-semibold text-ink">
+                  {Number(c.prixTotal).toLocaleString()} FCFA
+                </div>
+              </Card>
+            </Link>
           ))
         )}
       </div>
