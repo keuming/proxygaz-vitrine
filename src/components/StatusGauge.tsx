@@ -5,10 +5,11 @@ interface StatusConfig {
 }
 
 const STATUTS: Record<string, StatusConfig> = {
-  en_attente: { label: "En attente", color: "text-safety-600 bg-safety-400/10", dot: "bg-safety-500" },
-  confirmee: { label: "Confirmée", color: "text-steel-600 bg-steel-400/10", dot: "bg-steel-500" },
+  en_attente: { label: "Nouvelle", color: "text-safety-600 bg-safety-400/10", dot: "bg-safety-500" },
+  confirmee: { label: "En préparation", color: "text-steel-600 bg-steel-400/10", dot: "bg-steel-500" },
   en_livraison: { label: "En livraison", color: "text-steel-600 bg-steel-400/10", dot: "bg-steel-500" },
   livree: { label: "Livrée", color: "text-gaz-600 bg-gaz-400/10", dot: "bg-gaz-500" },
+  non_livree: { label: "Non livrée", color: "text-valve-600 bg-valve-400/10", dot: "bg-valve-500" },
   annulee: { label: "Annulée", color: "text-valve-600 bg-valve-400/10", dot: "bg-valve-500" },
   validee: { label: "Validée", color: "text-steel-600 bg-steel-400/10", dot: "bg-steel-500" },
   en_cours: { label: "En cours", color: "text-steel-600 bg-steel-400/10", dot: "bg-steel-500" },
