@@ -5,7 +5,10 @@ export function Footer() {
   if (location.pathname.startsWith("/pro/")) return null;
 
   return (
-    <footer className="bg-panel px-6 py-10 text-white">
+    <footer
+      className="bg-panel px-6 pt-10 text-white"
+      style={{ paddingBottom: "calc(2.5rem + env(safe-area-inset-bottom))" }}
+    >
       <div className="mx-auto max-w-5xl">
         <div className="grid gap-8 sm:grid-cols-3">
           <div>

@@ -293,7 +293,8 @@ export function CommanderGaz() {
       {panier && etape === "produits" && (
         <button
           onClick={() => setEtape("livraison")}
-          className="fixed bottom-4 left-1/2 flex w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 animate-slide-up items-center justify-between rounded-lg bg-panel px-5 py-4 text-white shadow-xl transition-transform hover:scale-[1.02]"
+          className="fixed left-1/2 flex w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 animate-slide-up items-center justify-between rounded-lg bg-panel px-5 py-4 text-white shadow-xl transition-transform hover:scale-[1.02]"
+          style={{ bottom: "calc(1rem + env(safe-area-inset-bottom))" }}
         >
           <span className="text-sm">
             {panier.quantite} × {panier.produit.nom} — {panier.produit.taille}

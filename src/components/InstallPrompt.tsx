@@ -7,11 +7,19 @@ interface BeforeInstallPromptEvent extends Event {
 
 const CLE_MASQUE = "proxigaz_install_masque";
 
+function dejaInstallee(): boolean {
+  const standaloneWeb = window.matchMedia("(display-mode: standalone)").matches;
+  const standaloneIOS = (window.navigator as any).standalone === true; // Safari iOS
+  return standaloneWeb || standaloneIOS;
+}
+
 export function InstallPrompt() {
   const [evenement, setEvenement] = useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
+    // Si l'app tourne déjà en mode installé (PWA standalone), inutile de proposer l'installation
+    if (dejaInstallee()) return;
     if (localStorage.getItem(CLE_MASQUE)) return;
 
     function onBeforeInstall(e: Event) {
@@ -38,7 +46,10 @@ export function InstallPrompt() {
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-4 left-1/2 z-40 flex w-[calc(100%-2rem)] max-w-md -translate-x-1/2 animate-slide-up items-center justify-between gap-3 rounded-lg bg-panel px-4 py-3 text-white shadow-xl">
+    <div
+      className="fixed left-1/2 z-40 flex w-[calc(100%-2rem)] max-w-md -translate-x-1/2 animate-slide-up items-center justify-between gap-3 rounded-lg bg-panel px-4 py-3 text-white shadow-xl"
+      style={{ bottom: "calc(1rem + env(safe-area-inset-bottom))" }}
+    >
       <div className="text-sm">
         <div className="font-medium">Installer ProxiGaz</div>
         <div className="text-xs text-white/60">Accès rapide depuis votre écran d'accueil</div>
