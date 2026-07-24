@@ -36,9 +36,10 @@ function RequireRole({ role, children }: { role: Role; children: React.ReactNode
 
 function AppRoutes() {
   return (
-    <>
+    <div className="flex min-h-screen flex-col">
       <PublicHeader />
-      <Routes>
+      <main className="flex-1">
+        <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/connexion" element={<AuthClient />} />
         <Route path="/pro" element={<LoginPro />} />
@@ -88,11 +89,12 @@ function AppRoutes() {
           }
         />
 
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </main>
       <Footer />
       <InstallPrompt />
-    </>
+    </div>
   );
 }
 
