@@ -16,7 +16,10 @@ export function PublicHeader() {
 
         <nav className="flex items-center gap-4 text-sm">
           <Link to="/commander-gaz" className="text-ink/70 hover:text-ink">
-            Commander
+            Gaz
+          </Link>
+          <Link to="/demander-ramassage" className="text-ink/70 hover:text-ink">
+            Ramassage
           </Link>
           {user?.role === "client" ? (
             <>

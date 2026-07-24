@@ -22,7 +22,13 @@ export function Home() {
               to="/commander-gaz"
               className="rounded-md bg-safety-500 px-6 py-3 text-sm font-semibold text-white hover:bg-safety-600"
             >
-              Commander maintenant
+              Commander du gaz
+            </Link>
+            <Link
+              to="/demander-ramassage"
+              className="rounded-md bg-gaz-500 px-6 py-3 text-sm font-semibold text-white hover:bg-gaz-600"
+            >
+              Demander un ramassage
             </Link>
             <Link
               to="/pro"

@@ -43,14 +43,7 @@ function AppRoutes() {
         <Route path="/pro/inscription" element={<InscriptionPro />} />
 
         <Route path="/commander-gaz" element={<CommanderGaz />} />
-        <Route
-          path="/demander-ramassage"
-          element={
-            <RequireRole role="client">
-              <DemanderRamassage />
-            </RequireRole>
-          }
-        />
+        <Route path="/demander-ramassage" element={<DemanderRamassage />} />
         <Route
           path="/mes-commandes"
           element={
