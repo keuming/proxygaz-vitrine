@@ -15,11 +15,11 @@ export function PublicHeader() {
         </Link>
 
         <nav className="flex items-center gap-4 text-sm">
+          <Link to="/commander-gaz" className="text-ink/70 hover:text-ink">
+            Commander
+          </Link>
           {user?.role === "client" ? (
             <>
-              <Link to="/commander-gaz" className="text-ink/70 hover:text-ink">
-                Commander
-              </Link>
               <Link to="/mes-commandes" className="text-ink/70 hover:text-ink">
                 Mes commandes
               </Link>

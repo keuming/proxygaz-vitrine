@@ -3,84 +3,94 @@ import { useNavigate } from "react-router-dom";
 import { trpcQuery, trpcMutation } from "../lib/api";
 import { Card } from "../components/Card";
 import { AddressPicker, AdresseChoisie } from "../components/AddressPicker";
+import { useAuth } from "../lib/auth";
 
-interface Boutique {
+interface Produit {
   id: string;
-  nomBoutique: string;
-  ville: string;
-  commune: string | null;
-  adresse: string | null;
-  nbReferencesDisponibles: number;
-}
-
-interface ProduitBoutique {
-  marqueId: string;
   nom: string;
   taille: string;
   prixRecharge: string;
-  prixConsigne: string | null;
-  quantiteDisponible: number;
+  totalDisponible: number;
+  nbBoutiques: number;
 }
 
-type Etape = "boutique" | "produit" | "confirmation";
+interface ArticlePanier {
+  produit: Produit;
+  quantite: number;
+}
+
+type Etape = "produits" | "livraison";
 
 export function CommanderGaz() {
   const navigate = useNavigate();
-  const [etape, setEtape] = useState<Etape>("boutique");
+  const { user, definirSession } = useAuth();
+
+  const [etape, setEtape] = useState<Etape>("produits");
+  const [produits, setProduits] = useState<Produit[]>([]);
+  const [panier, setPanier] = useState<ArticlePanier | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
 
-  // Étape 1 : boutiques
-  const [boutiques, setBoutiques] = useState<Boutique[]>([]);
-  const [boutiqueChoisie, setBoutiqueChoisie] = useState<Boutique | null>(null);
-
-  // Étape 2 : produits de la boutique choisie
-  const [produits, setProduits] = useState<ProduitBoutique[]>([]);
-  const [produitChoisi, setProduitChoisi] = useState<ProduitBoutique | null>(null);
-  const [quantite, setQuantite] = useState(1);
-
-  // Étape 3 : livraison
+  // Formulaire de livraison
+  const [nom, setNom] = useState("");
+  const [telephone, setTelephone] = useState("");
   const [adresse, setAdresse] = useState("");
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
   const [notes, setNotes] = useState("");
+  const [creerCompte, setCreerCompte] = useState(false);
+  const [motDePasse, setMotDePasse] = useState("");
   const [envoiEnCours, setEnvoiEnCours] = useState(false);
 
   useEffect(() => {
-    trpcQuery<Boutique[]>("gaz.boutiquesProches")
-      .then(setBoutiques)
+    trpcQuery<Produit[]>("gaz.catalogueDisponibilite")
+      .then(setProduits)
       .catch((e) => setErreur(e.message));
   }, []);
 
-  function choisirBoutique(b: Boutique) {
-    setBoutiqueChoisie(b);
-    setErreur(null);
-    trpcQuery<ProduitBoutique[]>("gaz.catalogueBoutique", { boutiqueId: b.id })
-      .then(setProduits)
-      .catch((e) => setErreur(e.message));
-    setEtape("produit");
+  function ajouterAuPanier(produit: Produit, quantite: number) {
+    setPanier({ produit, quantite });
+    setEtape("livraison");
   }
 
-  function choisirProduit(p: ProduitBoutique) {
-    setProduitChoisi(p);
-    setQuantite(1);
-    setEtape("confirmation");
+  function majQuantitePanier(delta: number) {
+    if (!panier) return;
+    const nouvelleQuantite = Math.max(1, Math.min(panier.produit.totalDisponible, panier.quantite + delta));
+    setPanier({ ...panier, quantite: nouvelleQuantite });
   }
 
-  async function commander() {
-    if (!boutiqueChoisie || !produitChoisi || !adresse) return;
+  async function validerCommande() {
+    if (!panier || !adresse) return;
+    if (!user && (!nom || !telephone)) {
+      setErreur("Nom et téléphone requis pour valider la commande");
+      return;
+    }
+
     setEnvoiEnCours(true);
     setErreur(null);
     try {
-      const commande = await trpcMutation<{ id: string }>("gaz.creerCommande", {
-        marqueGazId: produitChoisi.marqueId,
-        boutiqueId: boutiqueChoisie.id,
-        quantite,
+      const resultat = await trpcMutation<{
+        commande: { id: string };
+        token?: string;
+        user?: { id: string; nom: string; role: "client" };
+      }>("gaz.creerCommande", {
+        marqueGazId: panier.produit.id,
+        quantite: panier.quantite,
         adresseLivraison: adresse,
         latitude: latitude ?? undefined,
         longitude: longitude ?? undefined,
         notes: notes || undefined,
+        ...(!user && {
+          nomClient: nom,
+          telephoneClient: telephone,
+          motDePasseClient: creerCompte && motDePasse ? motDePasse : undefined,
+        }),
       });
-      navigate(`/commande/${commande.id}`);
+
+      if (resultat.token && resultat.user) {
+        definirSession(resultat.token, resultat.user);
+      }
+
+      navigate(`/commande/${resultat.commande.id}`);
     } catch (e) {
       setErreur(e instanceof Error ? e.message : "Erreur lors de la commande");
     } finally {
@@ -88,36 +98,28 @@ export function CommanderGaz() {
     }
   }
 
-  const prixTotal = produitChoisi ? Number(produitChoisi.prixRecharge) * quantite : 0;
+  const prixTotal = panier ? Number(panier.produit.prixRecharge) * panier.quantite : 0;
 
   return (
-    <div className="mx-auto max-w-xl px-4 py-8">
-      {/* Fil d'ariane façon VTC/livraison */}
+    <div className="mx-auto max-w-xl px-4 py-8 pb-28">
       <div className="mb-6 flex items-center gap-2 text-xs">
-        {(["boutique", "produit", "confirmation"] as Etape[]).map((e, i) => (
-          <div key={e} className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                if (e === "boutique") setEtape("boutique");
-                if (e === "produit" && boutiqueChoisie) setEtape("produit");
-              }}
-              className={`flex h-6 w-6 items-center justify-center rounded-full font-semibold ${
-                etape === e
-                  ? "bg-safety-500 text-white"
-                  : i < ["boutique", "produit", "confirmation"].indexOf(etape)
-                  ? "bg-gaz-500 text-white"
-                  : "bg-ink/10 text-ink/40"
-              }`}
-            >
-              {i + 1}
-            </button>
-            {i < 2 && <div className="h-px w-6 bg-ink/10" />}
-          </div>
-        ))}
+        <div
+          className={`flex h-6 w-6 items-center justify-center rounded-full font-semibold ${
+            etape === "produits" ? "bg-safety-500 text-white" : "bg-gaz-500 text-white"
+          }`}
+        >
+          {etape === "produits" ? "1" : "✓"}
+        </div>
+        <div className="h-px w-6 bg-ink/10" />
+        <div
+          className={`flex h-6 w-6 items-center justify-center rounded-full font-semibold ${
+            etape === "livraison" ? "bg-safety-500 text-white" : "bg-ink/10 text-ink/40"
+          }`}
+        >
+          2
+        </div>
         <span className="ml-2 text-ink/50">
-          {etape === "boutique" && "Choisissez une boutique"}
-          {etape === "produit" && "Choisissez votre bouteille"}
-          {etape === "confirmation" && "Confirmez votre commande"}
+          {etape === "produits" ? "Choisissez votre bouteille" : "Informations de livraison"}
         </span>
       </div>
 
@@ -125,132 +127,175 @@ export function CommanderGaz() {
         <div className="mb-4 rounded-md bg-valve-400/10 px-4 py-3 text-sm text-valve-600">{erreur}</div>
       )}
 
-      {/* Étape 1 : liste des boutiques, façon liste de restaurants */}
-      {etape === "boutique" && (
+      {etape === "produits" && (
         <div className="space-y-3">
-          {boutiques.length === 0 ? (
-            <p className="text-sm text-ink/40">Aucune boutique disponible pour le moment.</p>
+          {produits.length === 0 ? (
+            <p className="text-sm text-ink/40">Aucun produit disponible pour le moment.</p>
           ) : (
-            boutiques.map((b) => (
-              <button key={b.id} onClick={() => choisirBoutique(b)} className="block w-full text-left">
-                <Card className="p-4 transition-colors hover:border-steel-400">
+            produits.map((p) => {
+              const enRupture = p.totalDisponible === 0;
+              return (
+                <Card key={p.id} className={`p-4 ${enRupture ? "opacity-60" : ""}`}>
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-display text-base font-semibold text-ink">{b.nomBoutique}</div>
+                      <div className="font-display text-base font-semibold text-ink">
+                        {p.nom} — {p.taille}
+                      </div>
                       <div className="text-xs text-ink/50">
-                        {b.commune ? `${b.commune}, ` : ""}
-                        {b.ville}
+                        {enRupture ? (
+                          <span className="text-valve-500">Rupture de stock</span>
+                        ) : (
+                          `Disponible dans ${p.nbBoutiques} boutique(s)`
+                        )}
+                      </div>
+                      <div className="mt-1 font-data text-sm font-semibold text-ink">
+                        {Number(p.prixRecharge).toLocaleString()} FCFA
                       </div>
                     </div>
-                    <span className="rounded-full bg-gaz-400/10 px-3 py-1 text-xs font-medium text-gaz-600">
-                      {b.nbReferencesDisponibles} en stock
-                    </span>
+                    <button
+                      onClick={() => ajouterAuPanier(p, 1)}
+                      disabled={enRupture}
+                      className="rounded-md bg-safety-500 px-4 py-2 text-xs font-semibold text-white hover:bg-safety-600 disabled:opacity-50"
+                    >
+                      Ajouter
+                    </button>
                   </div>
                 </Card>
-              </button>
-            ))
+              );
+            })
           )}
         </div>
       )}
 
-      {/* Étape 2 : "menu" de la boutique choisie */}
-      {etape === "produit" && boutiqueChoisie && (
+      {etape === "livraison" && panier && (
         <div>
-          <div className="mb-4 text-sm text-ink/60">
-            Chez <span className="font-medium text-ink">{boutiqueChoisie.nomBoutique}</span>
-          </div>
-          <div className="space-y-3">
-            {produits.length === 0 ? (
-              <p className="text-sm text-ink/40">Aucune bouteille en stock dans cette boutique.</p>
-            ) : (
-              produits.map((p) => (
+          <Card className="mb-4 p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-medium text-ink">
+                  {panier.produit.nom} — {panier.produit.taille}
+                </div>
                 <button
-                  key={p.marqueId}
-                  onClick={() => choisirProduit(p)}
-                  className="block w-full text-left"
+                  onClick={() => setEtape("produits")}
+                  className="text-xs text-steel-500 hover:underline"
                 >
-                  <Card className="p-4 transition-colors hover:border-steel-400">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-sm font-medium text-ink">
-                          {p.nom} — {p.taille}
-                        </div>
-                        <div className="text-xs text-ink/50">{p.quantiteDisponible} disponibles</div>
-                      </div>
-                      <div className="font-data text-sm font-semibold text-ink">
-                        {Number(p.prixRecharge).toLocaleString()} FCFA
-                      </div>
-                    </div>
-                  </Card>
+                  Changer de produit
                 </button>
-              ))
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => majQuantitePanier(-1)}
+                  className="h-7 w-7 rounded-full bg-ink/5 text-ink/60 hover:bg-ink/10"
+                >
+                  −
+                </button>
+                <span className="w-6 text-center font-data text-sm">{panier.quantite}</span>
+                <button
+                  onClick={() => majQuantitePanier(1)}
+                  className="h-7 w-7 rounded-full bg-ink/5 text-ink/60 hover:bg-ink/10"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            {!user && (
+              <div className="mb-3 grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-ink/70">Nom et prénoms</label>
+                  <input
+                    value={nom}
+                    onChange={(e) => setNom(e.target.value)}
+                    className="w-full rounded-md border border-ink/15 px-3 py-2 text-sm focus:border-steel-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-ink/70">Téléphone</label>
+                  <input
+                    value={telephone}
+                    onChange={(e) => setTelephone(e.target.value)}
+                    placeholder="0700000000"
+                    className="w-full rounded-md border border-ink/15 px-3 py-2 text-sm focus:border-steel-500"
+                    required
+                  />
+                </div>
+              </div>
             )}
-          </div>
+
+            <label className="mb-2 block text-sm font-medium text-ink/70">Adresse de livraison</label>
+            <div className="mb-4">
+              <AddressPicker
+                valeur={adresse}
+                onChange={(a: AdresseChoisie) => {
+                  setAdresse(a.adresse);
+                  setLatitude(a.latitude);
+                  setLongitude(a.longitude);
+                }}
+              />
+            </div>
+
+            <label className="mb-2 block text-sm font-medium text-ink/70">Notes (optionnel)</label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={2}
+              className="mb-4 w-full rounded-md border border-ink/15 px-3 py-2 text-sm focus:border-steel-500"
+            />
+
+            {!user && (
+              <div className="mb-5 rounded-md bg-ink/5 p-3">
+                <label className="flex items-center gap-2 text-sm text-ink/70">
+                  <input
+                    type="checkbox"
+                    checked={creerCompte}
+                    onChange={(e) => setCreerCompte(e.target.checked)}
+                  />
+                  Créer un compte pour retrouver mes commandes plus tard (optionnel)
+                </label>
+                {creerCompte && (
+                  <input
+                    type="password"
+                    value={motDePasse}
+                    onChange={(e) => setMotDePasse(e.target.value)}
+                    placeholder="Choisissez un mot de passe"
+                    minLength={6}
+                    className="mt-2 w-full rounded-md border border-ink/15 px-3 py-2 text-sm focus:border-steel-500"
+                  />
+                )}
+              </div>
+            )}
+
+            <div className="mb-5 flex items-center justify-between rounded-md bg-ink/5 px-4 py-3">
+              <span className="text-sm text-ink/60">Total</span>
+              <span className="font-data text-lg font-semibold text-ink">
+                {prixTotal.toLocaleString()} FCFA
+              </span>
+            </div>
+
+            <button
+              onClick={validerCommande}
+              disabled={!adresse || envoiEnCours || (!user && (!nom || !telephone))}
+              className="w-full rounded-md bg-safety-500 py-3 text-sm font-semibold text-white hover:bg-safety-600 disabled:opacity-50"
+            >
+              {envoiEnCours ? "Envoi..." : "Valider la commande"}
+            </button>
+          </Card>
         </div>
       )}
 
-      {/* Étape 3 : confirmation, façon récapitulatif de commande */}
-      {etape === "confirmation" && boutiqueChoisie && produitChoisi && (
-        <Card className="p-6">
-          <div className="mb-4 flex items-center justify-between border-b border-ink/10 pb-4">
-            <div>
-              <div className="text-sm font-medium text-ink">
-                {produitChoisi.nom} — {produitChoisi.taille}
-              </div>
-              <div className="text-xs text-ink/50">{boutiqueChoisie.nomBoutique}</div>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setQuantite(Math.max(1, quantite - 1))}
-                className="h-7 w-7 rounded-full bg-ink/5 text-ink/60 hover:bg-ink/10"
-              >
-                −
-              </button>
-              <span className="w-6 text-center font-data text-sm">{quantite}</span>
-              <button
-                onClick={() => setQuantite(Math.min(produitChoisi.quantiteDisponible, quantite + 1))}
-                className="h-7 w-7 rounded-full bg-ink/5 text-ink/60 hover:bg-ink/10"
-              >
-                +
-              </button>
-            </div>
-          </div>
-
-          <label className="mb-2 block text-sm font-medium text-ink/70">Adresse de livraison</label>
-          <div className="mb-4">
-            <AddressPicker
-              valeur={adresse}
-              onChange={(a: AdresseChoisie) => {
-                setAdresse(a.adresse);
-                setLatitude(a.latitude);
-                setLongitude(a.longitude);
-              }}
-            />
-          </div>
-
-          <label className="mb-2 block text-sm font-medium text-ink/70">Notes (optionnel)</label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={2}
-            className="mb-5 w-full rounded-md border border-ink/15 px-3 py-2 text-sm focus:border-steel-500"
-          />
-
-          <div className="mb-5 flex items-center justify-between rounded-md bg-ink/5 px-4 py-3">
-            <span className="text-sm text-ink/60">Total</span>
-            <span className="font-data text-lg font-semibold text-ink">
-              {prixTotal.toLocaleString()} FCFA
-            </span>
-          </div>
-
-          <button
-            onClick={commander}
-            disabled={!adresse || envoiEnCours}
-            className="w-full rounded-md bg-safety-500 py-3 text-sm font-semibold text-white hover:bg-safety-600 disabled:opacity-50"
-          >
-            {envoiEnCours ? "Envoi..." : "Commander"}
-          </button>
-        </Card>
+      {panier && etape === "produits" && (
+        <button
+          onClick={() => setEtape("livraison")}
+          className="fixed bottom-4 left-1/2 flex w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 items-center justify-between rounded-lg bg-panel px-5 py-4 text-white shadow-xl"
+        >
+          <span className="text-sm">
+            {panier.quantite} × {panier.produit.nom} — {panier.produit.taille}
+          </span>
+          <span className="font-data text-sm font-semibold">{prixTotal.toLocaleString()} FCFA →</span>
+        </button>
       )}
     </div>
   );

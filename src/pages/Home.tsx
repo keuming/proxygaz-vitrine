@@ -19,7 +19,7 @@ export function Home() {
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link
-              to="/connexion"
+              to="/commander-gaz"
               className="rounded-md bg-safety-500 px-6 py-3 text-sm font-semibold text-white hover:bg-safety-600"
             >
               Commander maintenant
