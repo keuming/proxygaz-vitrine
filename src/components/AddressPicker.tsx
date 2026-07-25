@@ -23,6 +23,8 @@ export function AddressPicker({
   const markerInstance = useRef<google.maps.Marker | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
   const [pret, setPret] = useState(false);
+  const [latManuelle, setLatManuelle] = useState(0);
+  const [lngManuelle, setLngManuelle] = useState(0);
 
   useEffect(() => {
     let annule = false;
@@ -100,17 +102,53 @@ export function AddressPicker({
   }, []);
 
   if (erreur) {
-    // Repli : simple champ texte si la carte ne peut pas se charger (clé API absente, etc.)
+    // Repli : champ texte + saisie manuelle des coordonnées si la carte ne peut pas se charger
+    // (clé API absente ou non configurée pour l'instant)
     return (
       <div>
         <input
           value={valeur}
-          onChange={(e) => onChange({ adresse: e.target.value, latitude: 0, longitude: 0 })}
+          onChange={(e) => onChange({ adresse: e.target.value, latitude: latManuelle, longitude: lngManuelle })}
           placeholder="Rue, quartier, commune..."
-          className="w-full rounded-md border border-ink/15 px-3 py-2 text-sm focus:border-steel-500"
+          className="mb-2 w-full rounded-md border border-ink/15 px-3 py-2 text-sm focus:border-steel-500"
           required
         />
-        <p className="mt-1 text-xs text-ink/40">Carte indisponible — saisie manuelle uniquement.</p>
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="mb-1 block text-xs text-ink/50">Latitude (optionnel)</label>
+            <input
+              type="number"
+              step="any"
+              placeholder="5.336"
+              value={latManuelle || ""}
+              onChange={(e) => {
+                const lat = e.target.value ? Number(e.target.value) : 0;
+                setLatManuelle(lat);
+                onChange({ adresse: valeur, latitude: lat, longitude: lngManuelle });
+              }}
+              className="w-full rounded-md border border-ink/15 px-3 py-2 text-sm focus:border-steel-500"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-ink/50">Longitude (optionnel)</label>
+            <input
+              type="number"
+              step="any"
+              placeholder="-4.0267"
+              value={lngManuelle || ""}
+              onChange={(e) => {
+                const lng = e.target.value ? Number(e.target.value) : 0;
+                setLngManuelle(lng);
+                onChange({ adresse: valeur, latitude: latManuelle, longitude: lng });
+              }}
+              className="w-full rounded-md border border-ink/15 px-3 py-2 text-sm focus:border-steel-500"
+            />
+          </div>
+        </div>
+        <p className="mt-1 text-xs text-ink/40">
+          Carte indisponible — saisie manuelle. Astuce : clic droit sur l'emplacement dans Google
+          Maps pour copier ses coordonnées.
+        </p>
       </div>
     );
   }
