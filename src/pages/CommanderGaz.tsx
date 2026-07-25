@@ -5,6 +5,8 @@ import { Card } from "../components/Card";
 import { AddressPicker, AdresseChoisie } from "../components/AddressPicker";
 import { SuccessModal } from "../components/SuccessModal";
 import { AccountBenefits } from "../components/AccountBenefits";
+import { MobilePayLogo } from "../components/MobilePayLogo";
+import { MobilePaySimulation } from "../components/MobilePaySimulation";
 import { useAuth } from "../lib/auth";
 
 interface Produit {
@@ -21,7 +23,14 @@ interface ArticlePanier {
   quantite: number;
 }
 
-type Etape = "produits" | "livraison";
+type Etape = "produits" | "livraison" | "paiement";
+type ModePaiement = "especes" | "mobilepay";
+
+const ETAPES_LABELS: Record<Etape, string> = {
+  produits: "Choisissez votre bouteille",
+  livraison: "Informations de livraison",
+  paiement: "Mode de paiement",
+};
 
 export function CommanderGaz() {
   const navigate = useNavigate();
@@ -32,7 +41,6 @@ export function CommanderGaz() {
   const [panier, setPanier] = useState<ArticlePanier | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
 
-  // Formulaire de livraison
   const [nom, setNom] = useState("");
   const [telephone, setTelephone] = useState("");
   const [adresse, setAdresse] = useState("");
@@ -41,9 +49,13 @@ export function CommanderGaz() {
   const [notes, setNotes] = useState("");
   const [creerCompte, setCreerCompte] = useState(false);
   const [motDePasse, setMotDePasse] = useState("");
+
+  const [modePaiement, setModePaiement] = useState<ModePaiement | null>(null);
+  const [telephoneMobilePay, setTelephoneMobilePay] = useState("");
+  const [simulationEnCours, setSimulationEnCours] = useState(false);
+
   const [envoiEnCours, setEnvoiEnCours] = useState(false);
   const [succes, setSucces] = useState(false);
-  const [idCommande, setIdCommande] = useState<string | null>(null);
 
   useEffect(() => {
     trpcQuery<Produit[]>("gaz.catalogueDisponibilite")
@@ -62,16 +74,25 @@ export function CommanderGaz() {
     setPanier({ ...panier, quantite: nouvelleQuantite });
   }
 
-  async function validerCommande() {
-    if (!panier || !adresse) return;
+  function passerAuPaiement() {
+    if (!adresse) return;
     if (!user && (!nom || !telephone)) {
-      setErreur("Nom et téléphone requis pour valider la commande");
+      setErreur("Nom et téléphone requis pour continuer");
       return;
     }
+    setErreur(null);
+    setTelephoneMobilePay(telephone || "");
+    setEtape("paiement");
+  }
+
+  async function finaliserCommande(mentionPaiement: string) {
+    if (!panier || !adresse) return;
 
     setEnvoiEnCours(true);
     setErreur(null);
     try {
+      const notesAvecPaiement = [notes, mentionPaiement].filter(Boolean).join(" — ");
+
       const resultat = await trpcMutation<{
         commande: { id: string };
         token?: string;
@@ -82,7 +103,7 @@ export function CommanderGaz() {
         adresseLivraison: adresse,
         latitude: latitude ?? undefined,
         longitude: longitude ?? undefined,
-        notes: notes || undefined,
+        notes: notesAvecPaiement || undefined,
         ...(!user && {
           nomClient: nom,
           telephoneClient: telephone,
@@ -94,39 +115,54 @@ export function CommanderGaz() {
         definirSession(resultat.token, resultat.user);
       }
 
-      setIdCommande(resultat.commande.id);
       setSucces(true);
       setTimeout(() => navigate(`/commande/${resultat.commande.id}`), 2200);
     } catch (e) {
       setErreur(e instanceof Error ? e.message : "Erreur lors de la commande");
-    } finally {
       setEnvoiEnCours(false);
     }
   }
 
+  function validerPaiement() {
+    if (!modePaiement) return;
+
+    if (modePaiement === "especes") {
+      finaliserCommande("Paiement : espèces à la livraison");
+      return;
+    }
+
+    setSimulationEnCours(true);
+  }
+
+  function apresSimulationMobilePay() {
+    setSimulationEnCours(false);
+    finaliserCommande(`Paiement : MobilePay (simulé) — ${telephoneMobilePay}`);
+  }
+
   const prixTotal = panier ? Number(panier.produit.prixRecharge) * panier.quantite : 0;
+  const ETAPES_ORDRE: Etape[] = ["produits", "livraison", "paiement"];
+  const indexEtape = ETAPES_ORDRE.indexOf(etape);
 
   return (
     <div className="mx-auto max-w-xl px-4 py-8 pb-28">
       <div className="mb-6 flex items-center gap-2 text-xs">
-        <div
-          className={`flex h-6 w-6 items-center justify-center rounded-full font-semibold ${
-            etape === "produits" ? "bg-safety-500 text-white" : "bg-gaz-500 text-white"
-          }`}
-        >
-          {etape === "produits" ? "1" : "✓"}
-        </div>
-        <div className="h-px w-6 bg-ink/10" />
-        <div
-          className={`flex h-6 w-6 items-center justify-center rounded-full font-semibold ${
-            etape === "livraison" ? "bg-safety-500 text-white" : "bg-ink/10 text-ink/40"
-          }`}
-        >
-          2
-        </div>
-        <span className="ml-2 text-ink/50">
-          {etape === "produits" ? "Choisissez votre bouteille" : "Informations de livraison"}
-        </span>
+        {ETAPES_ORDRE.map((e, i) => (
+          <div key={e} className="flex items-center gap-2">
+            <div
+              className={`flex h-6 w-6 items-center justify-center rounded-full font-semibold ${
+                i === indexEtape
+                  ? "bg-safety-500 text-white"
+                  : i < indexEtape
+                  ? "bg-gaz-500 text-white"
+                  : "bg-ink/10 text-ink/40"
+              }`}
+            >
+              {i < indexEtape ? "✓" : i + 1}
+            </div>
+            {i < ETAPES_ORDRE.length - 1 && <div className="h-px w-4 bg-ink/10" />}
+          </div>
+        ))}
+        <span className="ml-2 text-ink/50">{ETAPES_LABELS[etape]}</span>
       </div>
 
       {erreur && (
@@ -289,11 +325,104 @@ export function CommanderGaz() {
             </div>
 
             <button
-              onClick={validerCommande}
-              disabled={!adresse || envoiEnCours || (!user && (!nom || !telephone))}
+              onClick={passerAuPaiement}
+              disabled={!adresse || (!user && (!nom || !telephone))}
               className="w-full rounded-md bg-safety-500 py-3 text-sm font-semibold text-white hover:bg-safety-600 disabled:opacity-50"
             >
-              {envoiEnCours ? "Envoi..." : "Valider la commande"}
+              Continuer vers le paiement
+            </button>
+          </Card>
+        </div>
+      )}
+
+      {etape === "paiement" && panier && (
+        <div>
+          <Card className="mb-4 p-4">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-ink/60">
+                {panier.quantite} × {panier.produit.nom} — {panier.produit.taille}
+              </span>
+              <span className="font-data font-semibold text-ink">
+                {prixTotal.toLocaleString()} FCFA
+              </span>
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <p className="mb-3 text-sm font-medium text-ink/70">Comment souhaitez-vous payer ?</p>
+
+            <div className="mb-5 space-y-3">
+              <button
+                onClick={() => setModePaiement("especes")}
+                className={`flex w-full items-center gap-4 rounded-lg border-2 p-4 text-left transition-colors ${
+                  modePaiement === "especes"
+                    ? "border-steel-500 bg-steel-500/5"
+                    : "border-ink/10 hover:border-ink/20"
+                }`}
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink/5 text-lg">
+                  💵
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-ink">Espèces à la livraison</div>
+                  <div className="text-xs text-ink/50">Payez le livreur directement</div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => setModePaiement("mobilepay")}
+                className={`flex w-full items-center gap-4 rounded-lg border-2 p-4 text-left transition-colors ${
+                  modePaiement === "mobilepay"
+                    ? "border-[#10B981] bg-[#10B981]/5"
+                    : "border-ink/10 hover:border-ink/20"
+                }`}
+              >
+                <MobilePayLogo className="h-10 w-10 shrink-0" />
+                <div>
+                  <div className="text-sm font-semibold text-ink">MobilePay</div>
+                  <div className="text-xs text-ink/50">Paiement mobile instantané et sécurisé</div>
+                </div>
+              </button>
+            </div>
+
+            {modePaiement === "mobilepay" && (
+              <div className="mb-5 animate-fade-in">
+                <label className="mb-1 block text-sm font-medium text-ink/70">
+                  Numéro MobilePay
+                </label>
+                <input
+                  value={telephoneMobilePay}
+                  onChange={(e) => setTelephoneMobilePay(e.target.value)}
+                  placeholder="0700000000"
+                  className="w-full rounded-md border border-ink/15 px-3 py-2 text-sm focus:border-[#10B981]"
+                  required
+                />
+              </div>
+            )}
+
+            <button
+              onClick={validerPaiement}
+              disabled={
+                !modePaiement ||
+                envoiEnCours ||
+                (modePaiement === "mobilepay" && !telephoneMobilePay)
+              }
+              className={`w-full rounded-md py-3 text-sm font-semibold text-white disabled:opacity-50 ${
+                modePaiement === "mobilepay" ? "bg-[#10B981] hover:bg-[#0EA271]" : "bg-safety-500 hover:bg-safety-600"
+              }`}
+            >
+              {envoiEnCours
+                ? "Traitement..."
+                : modePaiement === "mobilepay"
+                ? `Payer ${prixTotal.toLocaleString()} FCFA via MobilePay`
+                : "Confirmer la commande"}
+            </button>
+
+            <button
+              onClick={() => setEtape("livraison")}
+              className="mt-3 w-full text-center text-xs text-ink/40 hover:text-ink/60"
+            >
+              ← Retour
             </button>
           </Card>
         </div>
@@ -310,6 +439,14 @@ export function CommanderGaz() {
           </span>
           <span className="font-data text-sm font-semibold">{prixTotal.toLocaleString()} FCFA →</span>
         </button>
+      )}
+
+      {simulationEnCours && (
+        <MobilePaySimulation
+          telephone={telephoneMobilePay}
+          montant={prixTotal}
+          onTermine={apresSimulationMobilePay}
+        />
       )}
 
       {succes && (
