@@ -5,11 +5,13 @@ import { StockTab } from "./boutique/StockTab";
 import { FournisseursTab } from "./boutique/FournisseursTab";
 import { ApprovisionnementsTab } from "./boutique/ApprovisionnementsTab";
 import { HistoriqueTab } from "./boutique/HistoriqueTab";
+import { EncaissementsTab } from "./boutique/EncaissementsTab";
 
-type Onglet = "commandes" | "stock" | "fournisseurs" | "approvisionnements" | "historique";
+type Onglet = "commandes" | "encaissements" | "stock" | "fournisseurs" | "approvisionnements" | "historique";
 
 const ONGLETS: { value: Onglet; label: string }[] = [
   { value: "commandes", label: "Commandes" },
+  { value: "encaissements", label: "Encaissements" },
   { value: "stock", label: "Stock" },
   { value: "fournisseurs", label: "Fournisseurs" },
   { value: "approvisionnements", label: "Approvisionnements" },
@@ -39,6 +41,7 @@ export function DashboardBoutique() {
         </div>
 
         {onglet === "commandes" && <CommandesTab />}
+        {onglet === "encaissements" && <EncaissementsTab />}
         {onglet === "stock" && <StockTab />}
         {onglet === "fournisseurs" && <FournisseursTab />}
         {onglet === "approvisionnements" && <ApprovisionnementsTab />}

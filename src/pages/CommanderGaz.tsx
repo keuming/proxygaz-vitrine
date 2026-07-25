@@ -85,7 +85,7 @@ export function CommanderGaz() {
     setEtape("paiement");
   }
 
-  async function finaliserCommande(mentionPaiement: string) {
+  async function finaliserCommande(mentionPaiement: string, modePaiementBackend: "mobile_money" | "especes_livraison") {
     if (!panier || !adresse) return;
 
     setEnvoiEnCours(true);
@@ -104,6 +104,7 @@ export function CommanderGaz() {
         latitude: latitude ?? undefined,
         longitude: longitude ?? undefined,
         notes: notesAvecPaiement || undefined,
+        modePaiement: modePaiementBackend,
         ...(!user && {
           nomClient: nom,
           telephoneClient: telephone,
@@ -127,7 +128,7 @@ export function CommanderGaz() {
     if (!modePaiement) return;
 
     if (modePaiement === "especes") {
-      finaliserCommande("Paiement : espèces à la livraison");
+      finaliserCommande("Paiement : espèces à la livraison", "especes_livraison");
       return;
     }
 
@@ -136,7 +137,7 @@ export function CommanderGaz() {
 
   function apresSimulationMobilePay() {
     setSimulationEnCours(false);
-    finaliserCommande(`Paiement : MobilePay (simulé) — ${telephoneMobilePay}`);
+    finaliserCommande(`Paiement : MobilePay (simulé) — ${telephoneMobilePay}`, "mobile_money");
   }
 
   const prixTotal = panier ? Number(panier.produit.prixRecharge) * panier.quantite : 0;

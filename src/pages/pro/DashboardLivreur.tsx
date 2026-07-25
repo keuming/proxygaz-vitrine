@@ -21,10 +21,19 @@ interface MaLivraison {
   statut: string;
 }
 
+interface StatsLivreur {
+  totalLivraisons: number;
+  livraisonsCeMois: number;
+  valeurLivreeCeMois: number;
+  tauxReussite: number;
+  enCoursActuellement: number;
+}
+
 export function DashboardLivreur() {
   const [onglet, setOnglet] = useState<"disponibles" | "mesLivraisons">("disponibles");
   const [disponibles, setDisponibles] = useState<LivraisonDisponible[]>([]);
   const [mesLivraisons, setMesLivraisons] = useState<MaLivraison[]>([]);
+  const [stats, setStats] = useState<StatsLivreur | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
   const [actionEnCours, setActionEnCours] = useState<string | null>(null);
 
@@ -38,10 +47,15 @@ export function DashboardLivreur() {
     trpcQuery<MaLivraison[]>("gaz.mesLivraisons").then(setMesLivraisons).catch((e) => setErreur(e.message));
   }, []);
 
+  const chargerStats = useCallback(() => {
+    trpcQuery<StatsLivreur>("gaz.statsLivreur").then(setStats).catch(() => {});
+  }, []);
+
   useEffect(() => {
     chargerDisponibles();
     chargerMesLivraisons();
-  }, [chargerDisponibles, chargerMesLivraisons]);
+    chargerStats();
+  }, [chargerDisponibles, chargerMesLivraisons, chargerStats]);
 
   async function accepter(id: string) {
     setActionEnCours(id);
@@ -50,6 +64,7 @@ export function DashboardLivreur() {
       await trpcMutation("gaz.accepterLivraison", { commandeId: id });
       chargerDisponibles();
       chargerMesLivraisons();
+      chargerStats();
     } catch (e) {
       setErreur(e instanceof Error ? e.message : "Cette livraison a peut-être déjà été prise");
     } finally {
@@ -62,6 +77,7 @@ export function DashboardLivreur() {
     try {
       await trpcMutation("gaz.marquerLivree", { commandeId: id });
       chargerMesLivraisons();
+      chargerStats();
     } catch (e) {
       setErreur(e instanceof Error ? e.message : "Erreur");
     } finally {
@@ -74,6 +90,27 @@ export function DashboardLivreur() {
       <ProHeader titre="Espace livreur" sousTitre="Livraisons de bouteilles de gaz" />
 
       <div className="mx-auto max-w-4xl px-4 py-6 sm:px-8">
+        {stats && (
+          <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <Card className="p-4">
+              <div className="font-data text-xl font-bold text-ink">{stats.totalLivraisons}</div>
+              <div className="text-xs text-ink/50">Livraisons au total</div>
+            </Card>
+            <Card className="p-4">
+              <div className="font-data text-xl font-bold text-gaz-600">{stats.livraisonsCeMois}</div>
+              <div className="text-xs text-ink/50">Ce mois-ci</div>
+            </Card>
+            <Card className="p-4">
+              <div className="font-data text-xl font-bold text-steel-600">{stats.tauxReussite}%</div>
+              <div className="text-xs text-ink/50">Taux de réussite</div>
+            </Card>
+            <Card className="p-4">
+              <div className="font-data text-xl font-bold text-safety-500">{stats.enCoursActuellement}</div>
+              <div className="text-xs text-ink/50">En cours</div>
+            </Card>
+          </div>
+        )}
+
         <div className="mb-6 flex gap-2">
           <button
             onClick={() => setOnglet("disponibles")}

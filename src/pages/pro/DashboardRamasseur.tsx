@@ -20,10 +20,18 @@ interface MonRamassage {
   statut: string;
 }
 
+interface StatsRamasseur {
+  totalRamassages: number;
+  ramassagesCeMois: number;
+  enCoursActuellement: number;
+  valideesEnAttenteDeDemarrage: number;
+}
+
 export function DashboardRamasseur() {
   const [onglet, setOnglet] = useState<"disponibles" | "mesRamassages">("disponibles");
   const [disponibles, setDisponibles] = useState<DemandeDisponible[]>([]);
   const [mesRamassages, setMesRamassages] = useState<MonRamassage[]>([]);
+  const [stats, setStats] = useState<StatsRamasseur | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
   const [actionEnCours, setActionEnCours] = useState<string | null>(null);
 
@@ -39,10 +47,15 @@ export function DashboardRamasseur() {
       .catch((e) => setErreur(e.message));
   }, []);
 
+  const chargerStats = useCallback(() => {
+    trpcQuery<StatsRamasseur>("ramassage.statsRamasseur").then(setStats).catch(() => {});
+  }, []);
+
   useEffect(() => {
     chargerDisponibles();
     chargerMesRamassages();
-  }, [chargerDisponibles, chargerMesRamassages]);
+    chargerStats();
+  }, [chargerDisponibles, chargerMesRamassages, chargerStats]);
 
   async function valider(id: string) {
     setActionEnCours(id);
@@ -51,6 +64,7 @@ export function DashboardRamasseur() {
       await trpcMutation("ramassage.validerDemande", { demandeId: id });
       chargerDisponibles();
       chargerMesRamassages();
+      chargerStats();
     } catch (e) {
       setErreur(e instanceof Error ? e.message : "Cette demande a peut-être déjà été prise");
     } finally {
@@ -63,6 +77,7 @@ export function DashboardRamasseur() {
     try {
       await trpcMutation("ramassage.demarrerRamassage", { demandeId: id });
       chargerMesRamassages();
+      chargerStats();
     } catch (e) {
       setErreur(e instanceof Error ? e.message : "Erreur");
     } finally {
@@ -75,6 +90,7 @@ export function DashboardRamasseur() {
     try {
       await trpcMutation("ramassage.terminerDemande", { demandeId: id });
       chargerMesRamassages();
+      chargerStats();
     } catch (e) {
       setErreur(e instanceof Error ? e.message : "Erreur");
     } finally {
@@ -87,6 +103,29 @@ export function DashboardRamasseur() {
       <ProHeader titre="Espace ramasseur" sousTitre="Demandes de ramassage de poubelles" />
 
       <div className="mx-auto max-w-4xl px-4 py-6 sm:px-8">
+        {stats && (
+          <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <Card className="p-4">
+              <div className="font-data text-xl font-bold text-ink">{stats.totalRamassages}</div>
+              <div className="text-xs text-ink/50">Ramassages au total</div>
+            </Card>
+            <Card className="p-4">
+              <div className="font-data text-xl font-bold text-gaz-600">{stats.ramassagesCeMois}</div>
+              <div className="text-xs text-ink/50">Ce mois-ci</div>
+            </Card>
+            <Card className="p-4">
+              <div className="font-data text-xl font-bold text-steel-600">{stats.enCoursActuellement}</div>
+              <div className="text-xs text-ink/50">En cours</div>
+            </Card>
+            <Card className="p-4">
+              <div className="font-data text-xl font-bold text-safety-500">
+                {stats.valideesEnAttenteDeDemarrage}
+              </div>
+              <div className="text-xs text-ink/50">À démarrer</div>
+            </Card>
+          </div>
+        )}
+
         <div className="mb-6 flex gap-2">
           <button
             onClick={() => setOnglet("disponibles")}
