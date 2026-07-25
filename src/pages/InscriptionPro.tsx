@@ -2,6 +2,7 @@ import { useState, FormEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { trpcMutation } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import { AddressPicker, AdresseChoisie } from "../components/AddressPicker";
 
 type TypeProfil = "boutique" | "livreur" | "ramasseur";
 
@@ -22,9 +23,15 @@ export function InscriptionPro() {
   const [nom, setNom] = useState("");
   const [telephone, setTelephone] = useState("");
   const [motDePasse, setMotDePasse] = useState("");
+  const [codePin, setCodePin] = useState("");
+  const [pays, setPays] = useState("Côte d'Ivoire");
   const [ville, setVille] = useState("Abidjan");
   const [commune, setCommune] = useState("");
+  const [quartier, setQuartier] = useState("");
   const [nomBoutique, setNomBoutique] = useState("");
+  const [adresse, setAdresse] = useState("");
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
   const [vehicule, setVehicule] = useState("");
   const [zonesCouvertes, setZonesCouvertes] = useState("");
   const [typeRamasseur, setTypeRamasseur] = useState<"particulier" | "societe">("particulier");
@@ -45,10 +52,15 @@ export function InscriptionPro() {
         }>("auth.inscriptionBoutique", {
           nom,
           telephone,
-          motDePasse,
+          codePin,
           nomBoutique,
+          pays,
           ville,
           commune: commune || undefined,
+          quartier: quartier || undefined,
+          adresse: adresse || undefined,
+          latitude: latitude ?? undefined,
+          longitude: longitude ?? undefined,
         });
         definirSession(data.token, data.user);
         setMessage(data.message);
@@ -139,15 +151,36 @@ export function InscriptionPro() {
                 required
               />
 
-              <label className="mb-1 block text-sm font-medium text-ink/70">Mot de passe</label>
-              <input
-                type="password"
-                value={motDePasse}
-                onChange={(e) => setMotDePasse(e.target.value)}
-                minLength={6}
-                className="mb-3 w-full rounded-md border border-ink/15 px-3 py-2 text-sm focus:border-steel-500"
-                required
-              />
+              {type === "boutique" ? (
+                <>
+                  <label className="mb-1 block text-sm font-medium text-ink/70">
+                    Code PIN (4 chiffres) — servira à la connexion
+                  </label>
+                  <input
+                    type="password"
+                    inputMode="numeric"
+                    pattern="\d{4}"
+                    maxLength={4}
+                    value={codePin}
+                    onChange={(e) => setCodePin(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                    placeholder="••••"
+                    className="mb-3 w-full rounded-md border border-ink/15 px-3 py-2 text-center text-lg tracking-[0.5em] focus:border-steel-500"
+                    required
+                  />
+                </>
+              ) : (
+                <>
+                  <label className="mb-1 block text-sm font-medium text-ink/70">Mot de passe</label>
+                  <input
+                    type="password"
+                    value={motDePasse}
+                    onChange={(e) => setMotDePasse(e.target.value)}
+                    minLength={6}
+                    className="mb-3 w-full rounded-md border border-ink/15 px-3 py-2 text-sm focus:border-steel-500"
+                    required
+                  />
+                </>
+              )}
 
               <div className="mb-3 grid grid-cols-2 gap-3">
                 <div>
@@ -172,6 +205,29 @@ export function InscriptionPro() {
               </div>
 
               {type === "boutique" && (
+                <div className="mb-3 grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-ink/70">Pays</label>
+                    <input
+                      value={pays}
+                      onChange={(e) => setPays(e.target.value)}
+                      className="w-full rounded-md border border-ink/15 px-3 py-2 text-sm focus:border-steel-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-ink/70">Quartier</label>
+                    <input
+                      value={quartier}
+                      onChange={(e) => setQuartier(e.target.value)}
+                      placeholder="Angré, Riviera..."
+                      className="w-full rounded-md border border-ink/15 px-3 py-2 text-sm focus:border-steel-500"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {type === "boutique" && (
                 <>
                   <label className="mb-1 block text-sm font-medium text-ink/70">Nom de la boutique</label>
                   <input
@@ -180,6 +236,19 @@ export function InscriptionPro() {
                     className="mb-3 w-full rounded-md border border-ink/15 px-3 py-2 text-sm focus:border-steel-500"
                     required
                   />
+                  <label className="mb-1 block text-sm font-medium text-ink/70">
+                    Adresse précise (avec carte)
+                  </label>
+                  <div className="mb-3">
+                    <AddressPicker
+                      valeur={adresse}
+                      onChange={(a: AdresseChoisie) => {
+                        setAdresse(a.adresse);
+                        setLatitude(a.latitude);
+                        setLongitude(a.longitude);
+                      }}
+                    />
+                  </div>
                 </>
               )}
 

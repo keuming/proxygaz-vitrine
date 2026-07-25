@@ -49,9 +49,12 @@ export function LoginPro() {
             className="mb-4 w-full rounded-md border border-ink/15 px-3 py-2 text-sm focus:border-steel-500"
             required
           />
-          <label className="mb-1 block text-sm font-medium text-ink/70">Mot de passe</label>
+          <label className="mb-1 block text-sm font-medium text-ink/70">
+            Mot de passe (livreur/ramasseur) ou code PIN (boutique)
+          </label>
           <input
             type="password"
+            inputMode="text"
             value={motDePasse}
             onChange={(e) => setMotDePasse(e.target.value)}
             className="mb-4 w-full rounded-md border border-ink/15 px-3 py-2 text-sm focus:border-steel-500"
