@@ -3,6 +3,9 @@ import { trpcQuery, trpcMutation } from "../../lib/api";
 import { Card } from "../../components/Card";
 import { StatusGauge } from "../../components/StatusGauge";
 import { ProHeader } from "../../components/ProHeader";
+import { CreditIndicator } from "../../components/CreditIndicator";
+import { CreditPurchaseModal } from "../../components/CreditPurchaseModal";
+import { useAuth } from "../../lib/auth";
 
 interface LivraisonDisponible {
   id: string;
@@ -30,10 +33,13 @@ interface StatsLivreur {
 }
 
 export function DashboardLivreur() {
+  const { user } = useAuth();
   const [onglet, setOnglet] = useState<"disponibles" | "mesLivraisons">("disponibles");
   const [disponibles, setDisponibles] = useState<LivraisonDisponible[]>([]);
   const [mesLivraisons, setMesLivraisons] = useState<MaLivraison[]>([]);
   const [stats, setStats] = useState<StatsLivreur | null>(null);
+  const [credits, setCredits] = useState<number | null>(null);
+  const [achatOuvert, setAchatOuvert] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   const [actionEnCours, setActionEnCours] = useState<string | null>(null);
 
@@ -51,11 +57,18 @@ export function DashboardLivreur() {
     trpcQuery<StatsLivreur>("gaz.statsLivreur").then(setStats).catch(() => {});
   }, []);
 
+  const chargerCredits = useCallback(() => {
+    trpcQuery<{ credits: number }>("gaz.mesCreditsLivreur")
+      .then((r) => setCredits(r.credits))
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     chargerDisponibles();
     chargerMesLivraisons();
     chargerStats();
-  }, [chargerDisponibles, chargerMesLivraisons, chargerStats]);
+    chargerCredits();
+  }, [chargerDisponibles, chargerMesLivraisons, chargerStats, chargerCredits]);
 
   async function accepter(id: string) {
     setActionEnCours(id);
@@ -65,6 +78,7 @@ export function DashboardLivreur() {
       chargerDisponibles();
       chargerMesLivraisons();
       chargerStats();
+      chargerCredits();
     } catch (e) {
       setErreur(e instanceof Error ? e.message : "Cette livraison a peut-être déjà été prise");
     } finally {
@@ -85,11 +99,21 @@ export function DashboardLivreur() {
     }
   }
 
+  async function demanderCredit(quantite: number, referencePaiement: string) {
+    await trpcMutation("gaz.demanderCreditLivreur", { quantiteCredits: quantite, referencePaiement });
+  }
+
   return (
     <div className="min-h-screen bg-surface">
       <ProHeader titre="Espace livreur" sousTitre="Livraisons de bouteilles de gaz" />
 
       <div className="mx-auto max-w-4xl px-4 py-6 sm:px-8">
+        {credits !== null && (
+          <div className="mb-6">
+            <CreditIndicator credits={credits} onAcheter={() => setAchatOuvert(true)} />
+          </div>
+        )}
+
         {stats && (
           <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <Card className="p-4">
@@ -131,11 +155,27 @@ export function DashboardLivreur() {
         </div>
 
         {erreur && (
-          <div className="mb-4 rounded-md bg-valve-400/10 px-4 py-3 text-sm text-valve-600">{erreur}</div>
+          <div className="mb-4 rounded-md bg-valve-400/10 px-4 py-3 text-sm text-valve-600">
+            {erreur}
+            {erreur.includes("Crédit insuffisant") && (
+              <button
+                onClick={() => setAchatOuvert(true)}
+                className="ml-2 font-semibold underline hover:text-valve-700"
+              >
+                Acheter des crédits
+              </button>
+            )}
+          </div>
         )}
 
         {onglet === "disponibles" ? (
           <div className="space-y-3">
+            {credits === 0 && (
+              <div className="rounded-md bg-safety-400/10 px-4 py-3 text-sm text-safety-600">
+                Vous pouvez voir les livraisons disponibles, mais votre crédit est épuisé — achetez
+                des crédits pour pouvoir en accepter.
+              </div>
+            )}
             {disponibles.length === 0 ? (
               <p className="text-sm text-ink/40">Aucune livraison disponible dans votre zone.</p>
             ) : (
@@ -187,6 +227,18 @@ export function DashboardLivreur() {
           </div>
         )}
       </div>
+
+      {achatOuvert && (
+        <CreditPurchaseModal
+          nomSuggere={user?.nom ?? ""}
+          telephoneSuggere=""
+          onDemander={demanderCredit}
+          onFermer={() => {
+            setAchatOuvert(false);
+            chargerCredits();
+          }}
+        />
+      )}
     </div>
   );
 }

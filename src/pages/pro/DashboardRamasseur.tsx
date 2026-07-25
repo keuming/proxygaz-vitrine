@@ -4,6 +4,9 @@ import { Card } from "../../components/Card";
 import { StatusGauge } from "../../components/StatusGauge";
 import { ProHeader } from "../../components/ProHeader";
 import { EncaissementsRamasseurTab } from "./EncaissementsRamasseurTab";
+import { CreditIndicator } from "../../components/CreditIndicator";
+import { CreditPurchaseModal } from "../../components/CreditPurchaseModal";
+import { useAuth } from "../../lib/auth";
 
 interface DemandeDisponible {
   id: string;
@@ -29,10 +32,13 @@ interface StatsRamasseur {
 }
 
 export function DashboardRamasseur() {
+  const { user } = useAuth();
   const [onglet, setOnglet] = useState<"disponibles" | "mesRamassages" | "encaissements">("disponibles");
   const [disponibles, setDisponibles] = useState<DemandeDisponible[]>([]);
   const [mesRamassages, setMesRamassages] = useState<MonRamassage[]>([]);
   const [stats, setStats] = useState<StatsRamasseur | null>(null);
+  const [credits, setCredits] = useState<number | null>(null);
+  const [achatOuvert, setAchatOuvert] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   const [actionEnCours, setActionEnCours] = useState<string | null>(null);
 
@@ -52,11 +58,18 @@ export function DashboardRamasseur() {
     trpcQuery<StatsRamasseur>("ramassage.statsRamasseur").then(setStats).catch(() => {});
   }, []);
 
+  const chargerCredits = useCallback(() => {
+    trpcQuery<{ credits: number }>("ramassage.mesCreditsRamasseur")
+      .then((r) => setCredits(r.credits))
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     chargerDisponibles();
     chargerMesRamassages();
     chargerStats();
-  }, [chargerDisponibles, chargerMesRamassages, chargerStats]);
+    chargerCredits();
+  }, [chargerDisponibles, chargerMesRamassages, chargerStats, chargerCredits]);
 
   async function valider(id: string) {
     setActionEnCours(id);
@@ -66,6 +79,7 @@ export function DashboardRamasseur() {
       chargerDisponibles();
       chargerMesRamassages();
       chargerStats();
+      chargerCredits();
     } catch (e) {
       setErreur(e instanceof Error ? e.message : "Cette demande a peut-être déjà été prise");
     } finally {
@@ -99,11 +113,24 @@ export function DashboardRamasseur() {
     }
   }
 
+  async function demanderCredit(quantite: number, referencePaiement: string) {
+    await trpcMutation("ramassage.demanderCreditRamasseur", {
+      quantiteCredits: quantite,
+      referencePaiement,
+    });
+  }
+
   return (
     <div className="min-h-screen bg-surface">
       <ProHeader titre="Espace ramasseur" sousTitre="Demandes de ramassage de poubelles" />
 
       <div className="mx-auto max-w-4xl px-4 py-6 sm:px-8">
+        {credits !== null && (
+          <div className="mb-6">
+            <CreditIndicator credits={credits} onAcheter={() => setAchatOuvert(true)} />
+          </div>
+        )}
+
         {stats && (
           <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <Card className="p-4">
@@ -155,13 +182,29 @@ export function DashboardRamasseur() {
         </div>
 
         {erreur && (
-          <div className="mb-4 rounded-md bg-valve-400/10 px-4 py-3 text-sm text-valve-600">{erreur}</div>
+          <div className="mb-4 rounded-md bg-valve-400/10 px-4 py-3 text-sm text-valve-600">
+            {erreur}
+            {erreur.includes("Crédit insuffisant") && (
+              <button
+                onClick={() => setAchatOuvert(true)}
+                className="ml-2 font-semibold underline hover:text-valve-700"
+              >
+                Acheter des crédits
+              </button>
+            )}
+          </div>
         )}
 
         {onglet === "encaissements" ? (
           <EncaissementsRamasseurTab />
         ) : onglet === "disponibles" ? (
           <div className="space-y-3">
+            {credits === 0 && (
+              <div className="rounded-md bg-safety-400/10 px-4 py-3 text-sm text-safety-600">
+                Vous pouvez voir les demandes disponibles, mais votre crédit est épuisé — achetez
+                des crédits pour pouvoir en accepter.
+              </div>
+            )}
             {disponibles.length === 0 ? (
               <p className="text-sm text-ink/40">Aucune demande disponible dans votre zone.</p>
             ) : (
@@ -221,6 +264,18 @@ export function DashboardRamasseur() {
           </div>
         )}
       </div>
+
+      {achatOuvert && (
+        <CreditPurchaseModal
+          nomSuggere={user?.nom ?? ""}
+          telephoneSuggere=""
+          onDemander={demanderCredit}
+          onFermer={() => {
+            setAchatOuvert(false);
+            chargerCredits();
+          }}
+        />
+      )}
     </div>
   );
 }
