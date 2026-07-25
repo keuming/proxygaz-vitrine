@@ -4,6 +4,7 @@ import { trpcQuery, trpcMutation } from "../lib/api";
 import { Card } from "../components/Card";
 import { AddressPicker, AdresseChoisie } from "../components/AddressPicker";
 import { SuccessModal } from "../components/SuccessModal";
+import { AccountBenefits } from "../components/AccountBenefits";
 import { useAuth } from "../lib/auth";
 
 interface Produit {
@@ -255,25 +256,28 @@ export function CommanderGaz() {
             />
 
             {!user && (
-              <div className="mb-5 rounded-md bg-ink/5 p-3">
-                <label className="flex items-center gap-2 text-sm text-ink/70">
-                  <input
-                    type="checkbox"
-                    checked={creerCompte}
-                    onChange={(e) => setCreerCompte(e.target.checked)}
-                  />
-                  Créer un compte pour retrouver mes commandes plus tard (optionnel)
-                </label>
-                {creerCompte && (
-                  <input
-                    type="password"
-                    value={motDePasse}
-                    onChange={(e) => setMotDePasse(e.target.value)}
-                    placeholder="Choisissez un mot de passe"
-                    minLength={6}
-                    className="mt-2 w-full rounded-md border border-ink/15 px-3 py-2 text-sm focus:border-steel-500"
-                  />
-                )}
+              <div className="mb-5">
+                <AccountBenefits />
+                <div className="rounded-md bg-ink/5 p-3">
+                  <label className="flex items-center gap-2 text-sm text-ink/70">
+                    <input
+                      type="checkbox"
+                      checked={creerCompte}
+                      onChange={(e) => setCreerCompte(e.target.checked)}
+                    />
+                    Créer un compte pour retrouver mes commandes plus tard (optionnel)
+                  </label>
+                  {creerCompte && (
+                    <input
+                      type="password"
+                      value={motDePasse}
+                      onChange={(e) => setMotDePasse(e.target.value)}
+                      placeholder="Choisissez un mot de passe"
+                      minLength={6}
+                      className="mt-2 w-full rounded-md border border-ink/15 px-3 py-2 text-sm focus:border-steel-500"
+                    />
+                  )}
+                </div>
               </div>
             )}
 
