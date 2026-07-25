@@ -6,12 +6,14 @@ import { MobilePayLogo } from "../../components/MobilePayLogo";
 interface Transaction {
   id: string;
   clientNom: string;
+  clientTelephone: string;
   prixPropose: string | null;
   modePaiement: "especes_livraison" | "mobile_money" | null;
   encaisseAt: string | null;
 }
 
 interface Encaissements {
+  ramasseur: { nom: string; telephone: string };
   transactions: Transaction[];
   totaux: {
     especes: number;
@@ -44,6 +46,17 @@ export function EncaissementsRamasseurTab() {
 
   return (
     <div>
+      <Card className="mb-4 flex items-center justify-between p-4">
+        <div>
+          <div className="text-xs uppercase tracking-wide text-ink/40">Ramasseur</div>
+          <div className="font-display text-sm font-semibold text-ink">{donnees.ramasseur.nom}</div>
+        </div>
+        <div className="text-right">
+          <div className="text-xs uppercase tracking-wide text-ink/40">Téléphone</div>
+          <div className="font-data text-sm font-medium text-ink">{donnees.ramasseur.telephone}</div>
+        </div>
+      </Card>
+
       <div className="mb-4 grid grid-cols-3 gap-3">
         <Card className="p-4">
           <div className="text-xs font-medium uppercase tracking-wide text-ink/40">Total encaissé</div>
@@ -76,15 +89,17 @@ export function EncaissementsRamasseurTab() {
             <thead>
               <tr className="border-b border-ink/10 text-left text-xs uppercase tracking-wide text-ink/40">
                 <th className="px-4 py-3">Client</th>
+                <th className="px-4 py-3">Téléphone</th>
                 <th className="px-4 py-3">Mode</th>
                 <th className="px-4 py-3">Montant</th>
-                <th className="px-4 py-3">Date</th>
+                <th className="px-4 py-3">Date et heure</th>
               </tr>
             </thead>
             <tbody>
               {donnees.transactions.map((t) => (
                 <tr key={t.id} className="border-b border-ink/5 last:border-0">
                   <td className="px-4 py-3">{t.clientNom}</td>
+                  <td className="px-4 py-3 font-data text-ink/70">{t.clientTelephone}</td>
                   <td className="px-4 py-3">
                     {t.modePaiement === "mobile_money" ? (
                       <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[#10B981]">
@@ -100,7 +115,16 @@ export function EncaissementsRamasseurTab() {
                     {Number(t.prixPropose ?? 0).toLocaleString()} FCFA
                   </td>
                   <td className="px-4 py-3 font-data text-xs text-ink/50">
-                    {t.encaisseAt ? new Date(t.encaisseAt).toLocaleString("fr-FR") : "—"}
+                    {t.encaisseAt ? (
+                      <>
+                        <div>{new Date(t.encaisseAt).toLocaleDateString("fr-FR")}</div>
+                        <div className="text-ink/40">
+                          {new Date(t.encaisseAt).toLocaleTimeString("fr-FR")}
+                        </div>
+                      </>
+                    ) : (
+                      "—"
+                    )}
                   </td>
                 </tr>
               ))}
