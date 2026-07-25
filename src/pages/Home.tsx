@@ -41,7 +41,8 @@ export function Home() {
             style={{ animationDelay: "0.2s" }}
           >
             Fini les longs trajets avec une bouteille vide en main — commandez votre recharge de
-            gaz et un ramassage de poubelle depuis votre téléphone, à Abidjan et environs.
+            gaz et un ramassage de poubelle depuis votre téléphone, service disponible en Côte
+            d'Ivoire et partout en Afrique.
           </p>
 
           <div
