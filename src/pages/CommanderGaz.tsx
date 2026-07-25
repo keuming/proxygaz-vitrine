@@ -6,7 +6,7 @@ import { AddressPicker, AdresseChoisie } from "../components/AddressPicker";
 import { SuccessModal } from "../components/SuccessModal";
 import { AccountBenefits } from "../components/AccountBenefits";
 import { MobilePayLogo } from "../components/MobilePayLogo";
-import { MobilePaySimulation } from "../components/MobilePaySimulation";
+import { MobilePayCheckout, InfosPaiementMobilePay } from "../components/MobilePayCheckout";
 import { useAuth } from "../lib/auth";
 
 interface Produit {
@@ -51,8 +51,7 @@ export function CommanderGaz() {
   const [motDePasse, setMotDePasse] = useState("");
 
   const [modePaiement, setModePaiement] = useState<ModePaiement | null>(null);
-  const [telephoneMobilePay, setTelephoneMobilePay] = useState("");
-  const [simulationEnCours, setSimulationEnCours] = useState(false);
+  const [checkoutMobilePayOuvert, setCheckoutMobilePayOuvert] = useState(false);
 
   const [envoiEnCours, setEnvoiEnCours] = useState(false);
   const [succes, setSucces] = useState(false);
@@ -81,7 +80,6 @@ export function CommanderGaz() {
       return;
     }
     setErreur(null);
-    setTelephoneMobilePay(telephone || "");
     setEtape("paiement");
   }
 
@@ -132,12 +130,22 @@ export function CommanderGaz() {
       return;
     }
 
-    setSimulationEnCours(true);
+    setCheckoutMobilePayOuvert(true);
   }
 
-  function apresSimulationMobilePay() {
-    setSimulationEnCours(false);
-    finaliserCommande(`Paiement : MobilePay (simulé) — ${telephoneMobilePay}`, "mobile_money");
+  const LABELS_OPERATEURS: Record<string, string> = {
+    orange_money: "Orange Money",
+    wave: "Wave",
+    mtn_money: "MTN Money",
+    moov_money: "Moov Money",
+  };
+
+  function apresPaiementMobilePay(infos: InfosPaiementMobilePay) {
+    setCheckoutMobilePayOuvert(false);
+    finaliserCommande(
+      `Paiement : MobilePay (simulé) — ${LABELS_OPERATEURS[infos.operateur]} — ${infos.numeroCompte} — ${infos.nomPayeur}`,
+      "mobile_money"
+    );
   }
 
   const prixTotal = panier ? Number(panier.produit.prixRecharge) * panier.quantite : 0;
@@ -387,27 +395,15 @@ export function CommanderGaz() {
             </div>
 
             {modePaiement === "mobilepay" && (
-              <div className="mb-5 animate-fade-in">
-                <label className="mb-1 block text-sm font-medium text-ink/70">
-                  Numéro MobilePay
-                </label>
-                <input
-                  value={telephoneMobilePay}
-                  onChange={(e) => setTelephoneMobilePay(e.target.value)}
-                  placeholder="0700000000"
-                  className="w-full rounded-md border border-ink/15 px-3 py-2 text-sm focus:border-[#10B981]"
-                  required
-                />
-              </div>
+              <p className="mb-5 animate-fade-in text-xs text-ink/50">
+                Vous serez invité à choisir votre opérateur (Orange Money, Wave, MTN Money, Moov
+                Money) et à confirmer vos informations à l'étape suivante.
+              </p>
             )}
 
             <button
               onClick={validerPaiement}
-              disabled={
-                !modePaiement ||
-                envoiEnCours ||
-                (modePaiement === "mobilepay" && !telephoneMobilePay)
-              }
+              disabled={!modePaiement || envoiEnCours}
               className={`w-full rounded-md py-3 text-sm font-semibold text-white disabled:opacity-50 ${
                 modePaiement === "mobilepay" ? "bg-[#10B981] hover:bg-[#0EA271]" : "bg-safety-500 hover:bg-safety-600"
               }`}
@@ -415,7 +411,7 @@ export function CommanderGaz() {
               {envoiEnCours
                 ? "Traitement..."
                 : modePaiement === "mobilepay"
-                ? `Payer ${prixTotal.toLocaleString()} FCFA via MobilePay`
+                ? "Continuer avec MobilePay"
                 : "Confirmer la commande"}
             </button>
 
@@ -442,11 +438,14 @@ export function CommanderGaz() {
         </button>
       )}
 
-      {simulationEnCours && (
-        <MobilePaySimulation
-          telephone={telephoneMobilePay}
-          montant={prixTotal}
-          onTermine={apresSimulationMobilePay}
+      {checkoutMobilePayOuvert && panier && (
+        <MobilePayCheckout
+          typeService={`Bouteille de gaz — ${panier.produit.nom} ${panier.produit.taille}`}
+          nomSuggere={user?.nom ?? nom}
+          telephoneSuggere={telephone}
+          montantSuggere={prixTotal}
+          onTermine={apresPaiementMobilePay}
+          onAnnuler={() => setCheckoutMobilePayOuvert(false)}
         />
       )}
 
