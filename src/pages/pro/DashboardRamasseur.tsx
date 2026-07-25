@@ -3,6 +3,7 @@ import { trpcQuery, trpcMutation } from "../../lib/api";
 import { Card } from "../../components/Card";
 import { StatusGauge } from "../../components/StatusGauge";
 import { ProHeader } from "../../components/ProHeader";
+import { EncaissementsRamasseurTab } from "./EncaissementsRamasseurTab";
 
 interface DemandeDisponible {
   id: string;
@@ -28,7 +29,7 @@ interface StatsRamasseur {
 }
 
 export function DashboardRamasseur() {
-  const [onglet, setOnglet] = useState<"disponibles" | "mesRamassages">("disponibles");
+  const [onglet, setOnglet] = useState<"disponibles" | "mesRamassages" | "encaissements">("disponibles");
   const [disponibles, setDisponibles] = useState<DemandeDisponible[]>([]);
   const [mesRamassages, setMesRamassages] = useState<MonRamassage[]>([]);
   const [stats, setStats] = useState<StatsRamasseur | null>(null);
@@ -143,13 +144,23 @@ export function DashboardRamasseur() {
           >
             Mes ramassages
           </button>
+          <button
+            onClick={() => setOnglet("encaissements")}
+            className={`rounded-full px-4 py-2 text-sm font-medium ${
+              onglet === "encaissements" ? "bg-steel-500 text-white" : "bg-white text-ink/60"
+            }`}
+          >
+            Encaissements
+          </button>
         </div>
 
         {erreur && (
           <div className="mb-4 rounded-md bg-valve-400/10 px-4 py-3 text-sm text-valve-600">{erreur}</div>
         )}
 
-        {onglet === "disponibles" ? (
+        {onglet === "encaissements" ? (
+          <EncaissementsRamasseurTab />
+        ) : onglet === "disponibles" ? (
           <div className="space-y-3">
             {disponibles.length === 0 ? (
               <p className="text-sm text-ink/40">Aucune demande disponible dans votre zone.</p>
