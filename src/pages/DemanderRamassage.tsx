@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { trpcMutation } from "../lib/api";
 import { Card } from "../components/Card";
 import { AddressPicker, AdresseChoisie } from "../components/AddressPicker";
+import { SuccessModal } from "../components/SuccessModal";
 import { useAuth } from "../lib/auth";
 
 const TYPES_DECHET = [
@@ -28,6 +29,7 @@ export function DemanderRamassage() {
   const [motDePasse, setMotDePasse] = useState("");
   const [erreur, setErreur] = useState<string | null>(null);
   const [envoiEnCours, setEnvoiEnCours] = useState(false);
+  const [succes, setSucces] = useState(false);
 
   async function envoyer() {
     if (!adresse || !ville) return;
@@ -62,7 +64,8 @@ export function DemanderRamassage() {
         definirSession(resultat.token, resultat.user);
       }
 
-      navigate("/mes-commandes");
+      setSucces(true);
+      setTimeout(() => navigate("/mes-commandes"), 2200);
     } catch (e) {
       setErreur(e instanceof Error ? e.message : "Erreur lors de la demande");
     } finally {
@@ -197,6 +200,19 @@ export function DemanderRamassage() {
           {envoiEnCours ? "Envoi..." : "Envoyer la demande"}
         </button>
       </Card>
+
+      {succes && (
+        <SuccessModal
+          titre="Demande envoyée !"
+          sousTitre="Le premier ramasseur disponible dans votre zone va l'accepter."
+          couleur="gaz"
+        >
+          <div className="h-1 w-full overflow-hidden rounded-full bg-gaz-400/15">
+            <div className="h-full w-full origin-left animate-[shrink_2.2s_linear_both] bg-gaz-500" />
+          </div>
+          <p className="mt-3 text-xs text-ink/40">Redirection vers mes commandes...</p>
+        </SuccessModal>
+      )}
     </div>
   );
 }

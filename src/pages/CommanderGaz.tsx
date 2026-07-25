@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { trpcQuery, trpcMutation } from "../lib/api";
 import { Card } from "../components/Card";
 import { AddressPicker, AdresseChoisie } from "../components/AddressPicker";
+import { SuccessModal } from "../components/SuccessModal";
 import { useAuth } from "../lib/auth";
 
 interface Produit {
@@ -40,6 +41,8 @@ export function CommanderGaz() {
   const [creerCompte, setCreerCompte] = useState(false);
   const [motDePasse, setMotDePasse] = useState("");
   const [envoiEnCours, setEnvoiEnCours] = useState(false);
+  const [succes, setSucces] = useState(false);
+  const [idCommande, setIdCommande] = useState<string | null>(null);
 
   useEffect(() => {
     trpcQuery<Produit[]>("gaz.catalogueDisponibilite")
@@ -90,7 +93,9 @@ export function CommanderGaz() {
         definirSession(resultat.token, resultat.user);
       }
 
-      navigate(`/commande/${resultat.commande.id}`);
+      setIdCommande(resultat.commande.id);
+      setSucces(true);
+      setTimeout(() => navigate(`/commande/${resultat.commande.id}`), 2200);
     } catch (e) {
       setErreur(e instanceof Error ? e.message : "Erreur lors de la commande");
     } finally {
@@ -301,6 +306,19 @@ export function CommanderGaz() {
           </span>
           <span className="font-data text-sm font-semibold">{prixTotal.toLocaleString()} FCFA →</span>
         </button>
+      )}
+
+      {succes && (
+        <SuccessModal
+          titre="Commande envoyée !"
+          sousTitre="La boutique va confirmer votre commande dans un instant."
+          couleur="safety"
+        >
+          <div className="h-1 w-full overflow-hidden rounded-full bg-safety-400/15">
+            <div className="h-full w-full origin-left animate-[shrink_2.2s_linear_both] bg-safety-500" />
+          </div>
+          <p className="mt-3 text-xs text-ink/40">Redirection vers le suivi...</p>
+        </SuccessModal>
       )}
     </div>
   );

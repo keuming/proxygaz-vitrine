@@ -1,19 +1,26 @@
 import { Link } from "react-router-dom";
+import { DeliveryRoute } from "../components/DeliveryRoute";
 
-function BouteilleFlottante({ className = "" }: { className?: string }) {
+function IconeBouteille() {
   return (
-    <svg
-      viewBox="0 0 160 160"
-      className={`animate-float ${className}`}
-      style={{ animationDelay: "0.3s" }}
-    >
-      <rect x="66" y="30" width="28" height="14" rx="3" fill="#5B93AC" />
-      <rect x="72" y="20" width="16" height="10" rx="2" fill="#5B93AC" />
+    <svg viewBox="0 0 40 40" className="h-8 w-8">
+      <rect x="15" y="4" width="10" height="6" rx="2" fill="currentColor" opacity="0.6" />
       <path
-        d="M 56 56 Q 56 44 80 44 Q 104 44 104 56 L 104 122 Q 104 136 80 136 Q 56 136 56 122 Z"
-        fill="#D4661E"
+        d="M11 14 Q11 9 20 9 Q29 9 29 14 L29 32 Q29 36 20 36 Q11 36 11 32 Z"
+        fill="currentColor"
       />
-      <rect x="56" y="86" width="48" height="9" fill="#14232B" opacity="0.15" />
+      <rect x="11" y="22" width="18" height="3" fill="black" opacity="0.12" />
+    </svg>
+  );
+}
+
+function IconePoubelle() {
+  return (
+    <svg viewBox="0 0 40 40" className="h-8 w-8">
+      <rect x="9" y="9" width="22" height="4" rx="1.5" fill="currentColor" opacity="0.6" />
+      <path d="M12 15 L14 34 Q14 36 17 36 L23 36 Q26 36 26 34 L28 15 Z" fill="currentColor" />
+      <rect x="16" y="19" width="2.4" height="12" rx="1.2" fill="black" opacity="0.15" />
+      <rect x="21.6" y="19" width="2.4" height="12" rx="1.2" fill="black" opacity="0.15" />
     </svg>
   );
 }
@@ -21,12 +28,8 @@ function BouteilleFlottante({ className = "" }: { className?: string }) {
 export function Home() {
   return (
     <div>
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-panel px-6 py-20 text-white">
-        <BouteilleFlottante className="pointer-events-none absolute -right-4 top-8 hidden w-32 opacity-80 sm:block" />
-        <BouteilleFlottante className="pointer-events-none absolute -left-8 bottom-4 hidden w-20 opacity-40 sm:block" />
-
-        <div className="relative mx-auto max-w-4xl text-center">
+      <section className="relative overflow-hidden bg-panel px-6 pb-14 pt-16 text-white sm:pb-20 sm:pt-24">
+        <div className="mx-auto max-w-4xl text-center">
           <div className="animate-fade-in font-display text-4xl font-bold tracking-tight sm:text-5xl">
             PROXI<span className="text-safety-400">GAZ</span>
           </div>
@@ -57,51 +60,72 @@ export function Home() {
             >
               Demander un ramassage
             </Link>
-            <Link
-              to="/pro"
-              className="rounded-md border border-white/20 px-6 py-3 text-sm font-semibold text-white/90 transition-all hover:scale-105 hover:bg-white/10"
-            >
-              Espace professionnel
-            </Link>
+          </div>
+
+          <Link
+            to="/pro"
+            className="mt-4 inline-block animate-fade-in text-xs text-white/40 underline-offset-4 transition-colors hover:text-white/70 hover:underline"
+            style={{ animationDelay: "0.35s" }}
+          >
+            Vous êtes boutique, livreur ou ramasseur ? Accédez à votre espace pro →
+          </Link>
+        </div>
+
+        <div className="mx-auto mt-10 max-w-2xl animate-fade-in" style={{ animationDelay: "0.45s" }}>
+          <DeliveryRoute className="w-full" />
+          <div className="mt-1 flex justify-between px-4 text-[11px] uppercase tracking-wide text-white/30">
+            <span>Boutique</span>
+            <span>Chez vous</span>
           </div>
         </div>
       </section>
 
-      {/* Comment ça marche */}
       <section className="mx-auto max-w-5xl px-6 py-16">
         <h2 className="text-center font-display text-2xl font-semibold text-ink">
           Comment ça marche
         </h2>
-        <div className="mt-10 grid gap-8 sm:grid-cols-2">
-          <div className="animate-slide-up rounded-xl border border-ink/10 bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-lg">
-            <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-safety-400/15 font-display text-lg font-bold text-safety-500">
-              1
+        <div className="mt-10 grid gap-6 sm:grid-cols-2">
+          <div className="animate-slide-up overflow-hidden rounded-xl border border-ink/10 bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg">
+            <div className="h-1.5 bg-safety-500" />
+            <div className="p-6">
+              <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-full bg-safety-400/15 text-safety-500">
+                <IconeBouteille />
+              </div>
+              <h3 className="font-display text-lg font-semibold text-ink">Bouteille de gaz</h3>
+              <p className="mt-2 text-sm text-ink/60">
+                Choisissez votre marque et votre taille (B6, B12, B18...), indiquez votre adresse,
+                et une boutique partenaire proche de chez vous confirme et livre votre commande.
+              </p>
             </div>
-            <h3 className="font-display text-lg font-semibold text-ink">Bouteille de gaz</h3>
-            <p className="mt-2 text-sm text-ink/60">
-              Choisissez votre marque et votre taille (B6, B12, B18...), indiquez votre adresse,
-              et une boutique partenaire proche de chez vous confirme et livre votre commande.
-            </p>
           </div>
           <div
-            className="animate-slide-up rounded-xl border border-ink/10 bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-lg"
+            className="animate-slide-up overflow-hidden rounded-xl border border-ink/10 bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
             style={{ animationDelay: "0.1s" }}
           >
-            <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-gaz-400/15 font-display text-lg font-bold text-gaz-500">
-              2
+            <div className="h-1.5 bg-gaz-500" />
+            <div className="p-6">
+              <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-full bg-gaz-400/15 text-gaz-500">
+                <IconePoubelle />
+              </div>
+              <h3 className="font-display text-lg font-semibold text-ink">Ramassage d'ordures</h3>
+              <p className="mt-2 text-sm text-ink/60">
+                Lancez une demande de ramassage, et le premier ramasseur disponible dans votre
+                zone — particulier ou société — l'accepte et vient récupérer vos poubelles.
+              </p>
             </div>
-            <h3 className="font-display text-lg font-semibold text-ink">Ramassage d'ordures</h3>
-            <p className="mt-2 text-sm text-ink/60">
-              Lancez une demande de ramassage, et le premier ramasseur disponible dans votre
-              zone — particulier ou société — l'accepte et vient récupérer vos poubelles.
-            </p>
           </div>
         </div>
       </section>
 
-      {/* Pour les professionnels */}
-      <section className="bg-white px-6 py-16">
-        <div className="mx-auto max-w-4xl text-center">
+      <section className="relative overflow-hidden bg-white px-6 py-16">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: "radial-gradient(circle at 1px 1px, #16241F 1px, transparent 0)",
+            backgroundSize: "24px 24px",
+          }}
+        />
+        <div className="relative mx-auto max-w-4xl text-center">
           <h2 className="font-display text-2xl font-semibold text-ink">
             Boutique de gaz, livreur, ou ramasseur ?
           </h2>
