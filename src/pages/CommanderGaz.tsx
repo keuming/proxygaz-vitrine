@@ -8,6 +8,7 @@ import { AccountBenefits } from "../components/AccountBenefits";
 import { MobilePayLogo } from "../components/MobilePayLogo";
 import { MobilePayCheckout, InfosPaiementMobilePay } from "../components/MobilePayCheckout";
 import { useAuth } from "../lib/auth";
+import { GasDeliveryIllustration } from "../components/GasDeliveryIllustration";
 
 interface Produit {
   id: string;
@@ -154,6 +155,10 @@ export function CommanderGaz() {
 
   return (
     <div className="mx-auto max-w-xl px-4 py-8 pb-28">
+      {etape === "produits" && (
+        <GasDeliveryIllustration className="mb-4 h-32 w-full animate-fade-in sm:h-40" />
+      )}
+
       <div className="mb-6 flex items-center gap-2 text-xs">
         {ETAPES_ORDRE.map((e, i) => (
           <div key={e} className="flex items-center gap-2">
@@ -255,7 +260,7 @@ export function CommanderGaz() {
             </div>
           </Card>
 
-          <Card className="p-6">
+          <Card className="animate-slide-up p-6">
             {!user && (
               <div className="mb-3 grid grid-cols-2 gap-3">
                 <div>
@@ -357,7 +362,7 @@ export function CommanderGaz() {
             </div>
           </Card>
 
-          <Card className="p-6">
+          <Card className="animate-slide-up p-6">
             <p className="mb-3 text-sm font-medium text-ink/70">Comment souhaitez-vous payer ?</p>
 
             <div className="mb-5 space-y-3">

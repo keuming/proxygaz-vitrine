@@ -1,6 +1,7 @@
 import { useState, FormEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../lib/auth";
+import { ProNetworkIllustration } from "../components/ProNetworkIllustration";
 
 const CHEMINS_PAR_ROLE: Record<string, string> = {
   boutique: "/pro/boutique",
@@ -32,7 +33,9 @@ export function LoginPro() {
   return (
     <div className="flex min-h-[calc(100vh-64px)] items-center justify-center bg-panel px-4 py-12">
       <div className="w-full max-w-sm">
-        <div className="mb-6 text-center">
+        <ProNetworkIllustration className="mb-2 h-28 w-full animate-fade-in opacity-90" />
+
+        <div className="mb-6 animate-fade-in text-center" style={{ animationDelay: "0.1s" }}>
           <div className="font-display text-2xl font-bold text-white">
             PROXI<span className="text-safety-400">GAZ</span>
           </div>
@@ -40,7 +43,11 @@ export function LoginPro() {
           <p className="mt-1 text-xs text-white/40">Boutique de gaz · Livreur · Ramasseur</p>
         </div>
 
-        <form onSubmit={onSubmit} className="rounded-lg bg-white p-6 shadow-xl">
+        <form
+          onSubmit={onSubmit}
+          className="animate-slide-up rounded-lg bg-white p-6 shadow-xl"
+          style={{ animationDelay: "0.15s" }}
+        >
           <label className="mb-1 block text-sm font-medium text-ink/70">Téléphone</label>
           <input
             value={telephone}

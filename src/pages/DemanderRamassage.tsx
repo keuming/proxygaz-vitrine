@@ -8,6 +8,7 @@ import { AccountBenefits } from "../components/AccountBenefits";
 import { MobilePayLogo } from "../components/MobilePayLogo";
 import { MobilePayCheckout, InfosPaiementMobilePay } from "../components/MobilePayCheckout";
 import { useAuth } from "../lib/auth";
+import { WastePickupIllustration } from "../components/WastePickupIllustration";
 
 const TYPES_DECHET = [
   { value: "menager", label: "Ménager" },
@@ -121,6 +122,10 @@ export function DemanderRamassage() {
 
   return (
     <div className="mx-auto max-w-xl px-4 py-10">
+      {etape === "demande" && (
+        <WastePickupIllustration className="mb-4 h-32 w-full animate-fade-in sm:h-40" />
+      )}
+
       <div className="mb-6 flex items-center gap-2 text-xs">
         <div
           className={`flex h-6 w-6 items-center justify-center rounded-full font-semibold ${
@@ -153,7 +158,7 @@ export function DemanderRamassage() {
             <div className="mt-4 rounded-md bg-valve-400/10 px-4 py-3 text-sm text-valve-600">{erreur}</div>
           )}
 
-          <Card className="mt-6 p-6">
+          <Card className="mt-6 animate-slide-up p-6">
             {!user && (
               <div className="mb-4 grid grid-cols-2 gap-3">
                 <div>
