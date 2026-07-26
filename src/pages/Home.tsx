@@ -34,15 +34,15 @@ export function Home() {
             PROXI<span className="text-safety-400">GAZ</span>
           </div>
           <p className="mt-4 animate-fade-in text-lg text-white/70" style={{ animationDelay: "0.1s" }}>
-            Votre bouteille de gaz livrée chez vous. Votre poubelle ramassée en un clic.
+            Fini la corvée du gaz. Fini les ordures qui s'entassent.
           </p>
           <p
             className="mx-auto mt-2 max-w-xl animate-fade-in text-sm text-white/50"
             style={{ animationDelay: "0.2s" }}
           >
-            Fini les longs trajets avec une bouteille vide en main — commandez votre recharge de
-            gaz et un ramassage de poubelle depuis votre téléphone, service disponible en Côte
-            d'Ivoire et partout en Afrique.
+            Personne ne devrait envoyer un enfant chercher une bouteille de boutique en boutique,
+            ni vivre avec des poubelles qui s'accumulent faute de passage. ProxiGaz livre votre gaz
+            et ramasse vos ordures, en un clic — où que vous soyez en Afrique.
           </p>
 
           <div
