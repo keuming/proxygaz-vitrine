@@ -80,6 +80,10 @@ export function CommanderGaz() {
       setErreur("Nom et téléphone requis pour continuer");
       return;
     }
+    if (!user && creerCompte && motDePasse.length > 0 && motDePasse.length < 6) {
+      setErreur("Le mot de passe doit contenir au moins 6 caractères");
+      return;
+    }
     setErreur(null);
     setEtape("paiement");
   }
@@ -318,14 +322,23 @@ export function CommanderGaz() {
                     Créer un compte pour retrouver mes commandes plus tard (optionnel)
                   </label>
                   {creerCompte && (
-                    <input
-                      type="password"
-                      value={motDePasse}
-                      onChange={(e) => setMotDePasse(e.target.value)}
-                      placeholder="Choisissez un mot de passe"
-                      minLength={6}
-                      className="mt-2 w-full rounded-md border border-ink/15 px-3 py-2 text-sm focus:border-steel-500"
-                    />
+                    <>
+                      <input
+                        type="password"
+                        value={motDePasse}
+                        onChange={(e) => setMotDePasse(e.target.value)}
+                        placeholder="Choisissez un mot de passe"
+                        minLength={6}
+                        className="mt-2 w-full rounded-md border border-ink/15 px-3 py-2 text-sm focus:border-steel-500"
+                      />
+                      <p
+                        className={`mt-1 text-xs ${
+                          motDePasse.length > 0 && motDePasse.length < 6 ? "text-valve-500" : "text-ink/40"
+                        }`}
+                      >
+                        Au moins 6 caractères
+                      </p>
+                    </>
                   )}
                 </div>
               </div>
@@ -340,7 +353,11 @@ export function CommanderGaz() {
 
             <button
               onClick={passerAuPaiement}
-              disabled={!adresse || (!user && (!nom || !telephone))}
+              disabled={
+                !adresse ||
+                (!user && (!nom || !telephone)) ||
+                (!user && creerCompte && motDePasse.length > 0 && motDePasse.length < 6)
+              }
               className="w-full rounded-md bg-safety-500 py-3 text-sm font-semibold text-white hover:bg-safety-600 disabled:opacity-50"
             >
               Continuer vers le paiement
