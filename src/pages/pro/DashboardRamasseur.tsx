@@ -15,6 +15,7 @@ interface DemandeDisponible {
   commune: string | null;
   typeDechet: string;
   quantiteEstimee: string | null;
+  distanceKm: number | null;
 }
 
 interface MonRamassage {
@@ -70,6 +71,25 @@ export function DashboardRamasseur() {
     chargerStats();
     chargerCredits();
   }, [chargerDisponibles, chargerMesRamassages, chargerStats, chargerCredits]);
+
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        trpcMutation("ramassage.majPositionRamasseur", {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        })
+          .then(() => chargerDisponibles())
+          .catch(() => {});
+      },
+      () => {},
+      { enableHighAccuracy: true, maximumAge: 60000 }
+    );
+
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [chargerDisponibles]);
 
   async function valider(id: string) {
     setActionEnCours(id);
@@ -210,8 +230,15 @@ export function DashboardRamasseur() {
             ) : (
               disponibles.map((d) => (
                 <Card key={d.id} className="p-4">
-                  <div className="mb-1 text-sm font-medium text-ink">
-                    {d.adresse} — {d.commune ?? d.ville}
+                  <div className="mb-1 flex items-center justify-between">
+                    <div className="text-sm font-medium text-ink">
+                      {d.adresse} — {d.commune ?? d.ville}
+                    </div>
+                    {d.distanceKm !== null && (
+                      <span className="shrink-0 rounded-full bg-steel-400/10 px-2 py-0.5 text-xs font-medium text-steel-600">
+                        {d.distanceKm < 1 ? "< 1 km" : `${d.distanceKm} km`}
+                      </span>
+                    )}
                   </div>
                   <div className="mb-3 text-xs text-ink/50">
                     {d.typeDechet} {d.quantiteEstimee ? `· ${d.quantiteEstimee}` : ""}

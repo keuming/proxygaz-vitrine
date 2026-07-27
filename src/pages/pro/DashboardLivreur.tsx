@@ -15,6 +15,7 @@ interface LivraisonDisponible {
   boutiqueNom: string;
   boutiqueCommune: string | null;
   boutiqueVille: string;
+  distanceKm: number | null;
 }
 
 interface MaLivraison {
@@ -69,6 +70,27 @@ export function DashboardLivreur() {
     chargerStats();
     chargerCredits();
   }, [chargerDisponibles, chargerMesLivraisons, chargerStats, chargerCredits]);
+
+  // Transmet la position GPS en direct pendant que le livreur a cette page ouverte, pour que
+  // les courses disponibles lui soient présentées triées par proximité réelle.
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        trpcMutation("gaz.majPositionLivreur", {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        })
+          .then(() => chargerDisponibles())
+          .catch(() => {});
+      },
+      () => {}, // silencieux si refusé — le tri retombe sur l'adresse d'inscription
+      { enableHighAccuracy: true, maximumAge: 60000 }
+    );
+
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [chargerDisponibles]);
 
   async function accepter(id: string) {
     setActionEnCours(id);
@@ -181,7 +203,14 @@ export function DashboardLivreur() {
             ) : (
               disponibles.map((c) => (
                 <Card key={c.id} className="p-4">
-                  <div className="mb-1 text-sm font-medium text-ink">{c.boutiqueNom}</div>
+                  <div className="mb-1 flex items-center justify-between">
+                    <div className="text-sm font-medium text-ink">{c.boutiqueNom}</div>
+                    {c.distanceKm !== null && (
+                      <span className="rounded-full bg-steel-400/10 px-2 py-0.5 text-xs font-medium text-steel-600">
+                        {c.distanceKm < 1 ? "< 1 km" : `${c.distanceKm} km`}
+                      </span>
+                    )}
+                  </div>
                   <div className="mb-2 text-xs text-ink/50">
                     {c.boutiqueCommune ?? c.boutiqueVille} → {c.adresseLivraison}
                   </div>
