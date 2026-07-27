@@ -1,4 +1,4 @@
-const CACHE_NAME = "proxigaz-v1";
+const CACHE_NAME = "proxigaz-v2"; // bump : purge tous les caches précédents à l'activation
 const API_HOST = "proxygaz-backend.vercel.app";
 
 self.addEventListener("install", (event) => {
@@ -25,6 +25,16 @@ self.addEventListener("fetch", (event) => {
 
   // Seules les requêtes GET same-origin sont mises en cache
   if (event.request.method !== "GET" || url.origin !== self.location.origin) {
+    return;
+  }
+
+  // Le manifeste PWA doit TOUJOURS être resservi depuis le réseau : mis en cache, une
+  // ancienne version resterait servie indéfiniment et empêcherait le navigateur de
+  // reconnaître correctement l'app comme installable (display standalone, icônes...).
+  if (url.pathname === "/manifest.webmanifest") {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match(event.request))
+    );
     return;
   }
 
