@@ -21,10 +21,15 @@ export function AddressPicker({
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<google.maps.Map | null>(null);
   const markerInstance = useRef<google.maps.Marker | null>(null);
+  // Rendue accessible hors de l'effet d'initialisation, pour être appelée par le
+  // bouton "Utiliser ma position actuelle".
+  const appliquerPositionRef = useRef<(lat: number, lng: number, adresseTexte?: string) => void>();
   const [erreur, setErreur] = useState<string | null>(null);
   const [pret, setPret] = useState(false);
   const [latManuelle, setLatManuelle] = useState(0);
   const [lngManuelle, setLngManuelle] = useState(0);
+  const [localisationEnCours, setLocalisationEnCours] = useState(false);
+  const [erreurLocalisation, setErreurLocalisation] = useState<string | null>(null);
 
   useEffect(() => {
     let annule = false;
@@ -66,6 +71,8 @@ export function AddressPicker({
           }
         }
 
+        appliquerPositionRef.current = appliquerPosition;
+
         // Autocomplétion sur le champ de saisie
         const autocomplete = new google.maps.places.Autocomplete(inputRef.current!, {
           fields: ["formatted_address", "geometry", "name"],
@@ -101,11 +108,62 @@ export function AddressPicker({
     };
   }, []);
 
+  function utiliserPositionActuelle() {
+    if (!navigator.geolocation) {
+      setErreurLocalisation("La géolocalisation n'est pas disponible sur cet appareil.");
+      return;
+    }
+
+    setLocalisationEnCours(true);
+    setErreurLocalisation(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude: lat, longitude: lng } = position.coords;
+        setLocalisationEnCours(false);
+
+        if (appliquerPositionRef.current) {
+          // Mode carte : recentre et déclenche le géocodage inverse automatiquement
+          appliquerPositionRef.current(lat, lng);
+        } else {
+          // Mode de secours (carte indisponible) : renseigne au moins les coordonnées
+          setLatManuelle(lat);
+          setLngManuelle(lng);
+          onChange({ adresse: valeur || `${lat.toFixed(5)}, ${lng.toFixed(5)}`, latitude: lat, longitude: lng });
+        }
+      },
+      (err) => {
+        setLocalisationEnCours(false);
+        setErreurLocalisation(
+          err.code === err.PERMISSION_DENIED
+            ? "Localisation refusée. Autorisez l'accès à la position dans les réglages de votre navigateur."
+            : "Impossible d'obtenir votre position pour le moment."
+        );
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
+
+  const boutonLocalisation = (
+    <button
+      type="button"
+      onClick={utiliserPositionActuelle}
+      disabled={localisationEnCours}
+      className="mb-2 flex w-full items-center justify-center gap-1.5 rounded-md border border-steel-400/40 bg-steel-500/5 py-2 text-xs font-medium text-steel-600 hover:bg-steel-500/10 disabled:opacity-60"
+    >
+      📍 {localisationEnCours ? "Localisation en cours..." : "Utiliser ma position actuelle"}
+    </button>
+  );
+
   if (erreur) {
     // Repli : champ texte + saisie manuelle des coordonnées si la carte ne peut pas se charger
     // (clé API absente ou non configurée pour l'instant)
     return (
       <div>
+        {boutonLocalisation}
+        {erreurLocalisation && (
+          <p className="mb-2 text-xs text-valve-500">{erreurLocalisation}</p>
+        )}
         <input
           value={valeur}
           onChange={(e) => onChange({ adresse: e.target.value, latitude: latManuelle, longitude: lngManuelle })}
@@ -155,6 +213,10 @@ export function AddressPicker({
 
   return (
     <div>
+      {boutonLocalisation}
+      {erreurLocalisation && (
+        <p className="mb-2 text-xs text-valve-500">{erreurLocalisation}</p>
+      )}
       <input
         ref={inputRef}
         defaultValue={valeur}
