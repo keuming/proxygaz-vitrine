@@ -64,18 +64,38 @@ export function InstallPrompt() {
       style={{ bottom: "calc(1rem + env(safe-area-inset-bottom))" }}
     >
       {modeIOS ? (
-        <>
-          <div className="text-sm">
-            <div className="font-medium">Installer ProxiGaz</div>
-            <div className="text-xs text-white/60">
-              Appuyez sur <span className="font-semibold">Partager</span> <span aria-hidden>⬆️</span>{" "}
-              puis <span className="font-semibold">Sur l'écran d'accueil</span>
-            </div>
+        <div className="w-full">
+          <div className="mb-2 text-sm font-medium">Comment installer ProxiGaz</div>
+          <div className="flex items-center gap-2 text-xs text-white/70">
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/15 text-[11px] font-semibold">
+              1
+            </span>
+            <span>Appuyez sur l'icône</span>
+            <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v12m0-12l-4 4m4-4l4 4" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M5 12v6a2 2 0 002 2h10a2 2 0 002-2v-6"
+              />
+            </svg>
+            <span>de Safari</span>
           </div>
-          <button onClick={fermer} className="shrink-0 text-xs text-white/50 hover:text-white/80">
-            Fermer
+          <div className="mt-1.5 flex items-center gap-2 text-xs text-white/70">
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/15 text-[11px] font-semibold">
+              2
+            </span>
+            <span>
+              Choisissez <span className="font-semibold text-white">Sur l'écran d'accueil</span>
+            </span>
+          </div>
+          <button
+            onClick={fermer}
+            className="mt-3 w-full rounded-md bg-white/10 py-2 text-xs font-medium text-white hover:bg-white/20"
+          >
+            J'ai compris
           </button>
-        </>
+        </div>
       ) : (
         <>
           <div className="text-sm">
