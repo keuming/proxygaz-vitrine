@@ -66,26 +66,34 @@ export function InstallPrompt() {
       {modeIOS ? (
         <div className="w-full">
           <div className="mb-2 text-sm font-medium">Comment installer ProxiGaz</div>
-          <div className="flex items-center gap-2 text-xs text-white/70">
-            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/15 text-[11px] font-semibold">
+          <div className="flex items-start gap-2 text-xs text-white/70">
+            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/15 text-[11px] font-semibold">
               1
             </span>
-            <span>Appuyez sur l'icône</span>
-            <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v12m0-12l-4 4m4-4l4 4" />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M5 12v6a2 2 0 002 2h10a2 2 0 002-2v-6"
-              />
-            </svg>
-            <span>de Safari</span>
+            <span className="min-w-0 flex-1 leading-relaxed">
+              Appuyez sur l'icône{" "}
+              <svg
+                viewBox="0 0 24 24"
+                className="inline-block h-3.5 w-3.5 align-[-3px]"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v12m0-12l-4 4m4-4l4 4" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M5 12v6a2 2 0 002 2h10a2 2 0 002-2v-6"
+                />
+              </svg>{" "}
+              Partager de Safari
+            </span>
           </div>
-          <div className="mt-1.5 flex items-center gap-2 text-xs text-white/70">
-            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/15 text-[11px] font-semibold">
+          <div className="mt-1.5 flex items-start gap-2 text-xs text-white/70">
+            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/15 text-[11px] font-semibold">
               2
             </span>
-            <span>
+            <span className="min-w-0 flex-1 leading-relaxed">
               Choisissez <span className="font-semibold text-white">Sur l'écran d'accueil</span>
             </span>
           </div>
