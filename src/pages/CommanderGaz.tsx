@@ -301,11 +301,19 @@ export function CommanderGaz() {
               />
             </div>
 
-            <label className="mb-2 block text-sm font-medium text-ink/70">Notes (optionnel)</label>
+            <label className="mb-1 block text-sm font-medium text-ink/70">
+              Repères pour vous trouver (recommandé)
+            </label>
+            <p className="mb-2 text-xs text-ink/50">
+              Décrivez votre position réelle en quelques mots (portail de quelle couleur, à côté
+              de quel commerce, quel étage...). Si la carte n'est pas exacte, c'est ce qui
+              permettra au livreur de vous trouver sans problème.
+            </p>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
+              placeholder="Ex : portail vert, juste après la pharmacie, 2ème étage porte de gauche"
               className="mb-4 w-full rounded-md border border-ink/15 px-3 py-2 text-sm focus:border-steel-500"
             />
 
