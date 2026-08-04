@@ -31,17 +31,12 @@ export function PublicHeader() {
               </button>
             </>
           ) : (
-            <>
-              <Link to="/pro" className="text-ink/70 hover:text-ink">
-                Espace pro
-              </Link>
-              <Link
-                to="/connexion"
-                className="rounded-md bg-steel-500 px-3 py-1.5 text-white hover:bg-steel-600"
-              >
-                Se connecter
-              </Link>
-            </>
+            <Link
+              to="/connexion"
+              className="rounded-md bg-steel-500 px-3 py-1.5 text-white hover:bg-steel-600"
+            >
+              Se connecter
+            </Link>
           )}
         </nav>
       </div>

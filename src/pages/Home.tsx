@@ -79,6 +79,23 @@ function CommentCaMarcheModal({ onFermer }: { onFermer: () => void }) {
             Demander un ramassage
           </Link>
         </div>
+
+        <div className="mt-8 border-t border-ink/10 pt-6 text-center">
+          <h3 className="font-display text-base font-semibold text-ink">
+            Boutique de gaz, livreur, ou ramasseur ?
+          </h3>
+          <p className="mx-auto mt-1.5 max-w-md text-sm text-ink/60">
+            Rejoignez le réseau ProxiGaz et gérez vos commandes, vos livraisons ou vos
+            ramassages depuis votre espace dédié.
+          </p>
+          <Link
+            to="/pro"
+            onClick={onFermer}
+            className="mt-4 inline-block rounded-md bg-steel-500 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:scale-105 hover:bg-steel-600"
+          >
+            Accéder à mon espace professionnel
+          </Link>
+        </div>
       </div>
     </div>
   );
@@ -130,16 +147,6 @@ export function Home() {
               </span>
               Comment ça marche
             </button>
-
-            <div>
-              <Link
-                to="/pro"
-                className="mt-4 inline-block animate-fade-in text-xs text-white/40 underline-offset-4 transition-colors hover:text-white/70 hover:underline"
-                style={{ animationDelay: "0.35s" }}
-              >
-                Vous êtes boutique, livreur ou ramasseur ? Accédez à votre espace pro →
-              </Link>
-            </div>
           </div>
 
           <div className="relative order-first sm:order-none sm:self-end">
@@ -151,31 +158,6 @@ export function Home() {
               style={{ animationDelay: "0.15s" }}
             />
           </div>
-        </div>
-      </section>
-
-      <section className="relative overflow-hidden bg-white px-6 py-16">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage: "radial-gradient(circle at 1px 1px, #16241F 1px, transparent 0)",
-            backgroundSize: "24px 24px",
-          }}
-        />
-        <div className="relative mx-auto max-w-3xl text-center">
-          <h2 className="font-display text-2xl font-semibold text-ink">
-            Boutique de gaz, livreur, ou ramasseur ?
-          </h2>
-          <p className="mx-auto mt-2 max-w-xl text-sm text-ink/60">
-            Rejoignez le réseau ProxiGaz et gérez vos commandes, vos livraisons ou vos
-            ramassages depuis votre espace dédié.
-          </p>
-          <Link
-            to="/pro"
-            className="mt-6 inline-block rounded-md bg-steel-500 px-6 py-3 text-sm font-semibold text-white transition-all hover:scale-105 hover:bg-steel-600"
-          >
-            Accéder à mon espace professionnel
-          </Link>
         </div>
       </section>
 

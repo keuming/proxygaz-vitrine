@@ -1,10 +1,5 @@
 import { useEffect, useState } from "react";
 
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
-}
-
 const CLE_MASQUE = "proxigaz_install_masque";
 
 function dejaInstallee(): boolean {
@@ -17,70 +12,29 @@ function estIOS(): boolean {
   return /iPhone|iPad|iPod/i.test(navigator.userAgent);
 }
 
-function estAndroid(): boolean {
-  return /Android/i.test(navigator.userAgent);
+function estMobile(): boolean {
+  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 }
 
+/**
+ * Bannière d'installation PWA — volontairement 100% instructions manuelles, sur les deux
+ * plateformes. On a tenté de déclencher l'installation par programmation sur Android via
+ * l'API beforeinstallprompt, mais le comportement observé était incohérent selon les
+ * appareils (ouverture d'un simple onglet Chrome au lieu d'installer). Les instructions
+ * manuelles, elles, fonctionnent toujours, sans exception.
+ */
 export function InstallPrompt() {
-  const [evenement, setEvenement] = useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
   const [modeIOS, setModeIOS] = useState(false);
-  const [modeManuelAndroid, setModeManuelAndroid] = useState(false);
 
   useEffect(() => {
-    // Si l'app tourne déjà en mode installé (PWA standalone), inutile de proposer l'installation
     if (dejaInstallee()) return;
     if (localStorage.getItem(CLE_MASQUE)) return;
+    if (!estMobile()) return;
 
-    // Safari iOS ne déclenche JAMAIS l'événement "beforeinstallprompt" — c'est une limitation
-    // de la plateforme, pas un bug. La seule option est d'afficher des instructions manuelles.
-    if (estIOS()) {
-      setModeIOS(true);
-      setVisible(true);
-      return;
-    }
-
-    function onBeforeInstall(e: Event) {
-      e.preventDefault();
-      setEvenement(e as BeforeInstallPromptEvent);
-      setVisible(true);
-    }
-
-    window.addEventListener("beforeinstallprompt", onBeforeInstall);
-
-    // Filet de sécurité (Android uniquement) : sur certains appareils, l'événement peut se
-    // déclencher avant que ce composant n'ait eu le temps de s'abonner. Après un délai, si
-    // rien n'a été capté, on affiche quand même la bannière en mode instructions manuelles
-    // plutôt que de ne rien montrer du tout.
-    let delaiRepli: ReturnType<typeof setTimeout> | undefined;
-    if (estAndroid()) {
-      delaiRepli = setTimeout(() => {
-        setVisible((dejaVisible) => {
-          if (!dejaVisible) setModeManuelAndroid(true);
-          return true;
-        });
-      }, 3000);
-    }
-
-    return () => {
-      window.removeEventListener("beforeinstallprompt", onBeforeInstall);
-      if (delaiRepli) clearTimeout(delaiRepli);
-    };
+    setModeIOS(estIOS());
+    setVisible(true);
   }, []);
-
-  async function installer() {
-    if (evenement) {
-      try {
-        await evenement.prompt();
-        setVisible(false);
-        return;
-      } catch {
-        // L'événement était présent mais invalide (déjà consommé, expiré...) : on bascule
-        // sur les instructions manuelles plutôt que de laisser le clic sans effet.
-      }
-    }
-    setModeManuelAndroid(true);
-  }
 
   function fermer() {
     setVisible(false);
@@ -91,12 +45,13 @@ export function InstallPrompt() {
 
   return (
     <div
-      className="fixed left-1/2 z-40 flex w-[calc(100%-2rem)] max-w-md -translate-x-1/2 animate-slide-up items-center justify-between gap-3 rounded-lg bg-panel px-4 py-3 text-white shadow-xl"
+      className="fixed left-1/2 z-40 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 animate-slide-up rounded-lg bg-panel px-4 py-3 text-white shadow-xl"
       style={{ bottom: "calc(1rem + env(safe-area-inset-bottom))" }}
     >
+      <div className="mb-2 text-sm font-medium">Comment installer ProxiGaz</div>
+
       {modeIOS ? (
-        <div className="w-full">
-          <div className="mb-2 text-sm font-medium">Comment installer ProxiGaz</div>
+        <>
           <div className="flex items-start gap-2 text-xs text-white/70">
             <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/15 text-[11px] font-semibold">
               1
@@ -128,50 +83,38 @@ export function InstallPrompt() {
               Choisissez <span className="font-semibold text-white">Sur l'écran d'accueil</span>
             </span>
           </div>
-          <button
-            onClick={fermer}
-            className="mt-3 w-full rounded-md bg-white/10 py-2 text-xs font-medium text-white hover:bg-white/20"
-          >
-            J'ai compris
-          </button>
-        </div>
-      ) : modeManuelAndroid ? (
-        <div className="w-full">
-          <div className="mb-1.5 text-sm font-medium">Comment installer ProxiGaz</div>
-          <p className="text-xs leading-relaxed text-white/70">
-            Appuyez sur le menu <span className="font-semibold text-white">⋮</span> en haut à
-            droite de votre navigateur, puis choisissez{" "}
-            <span className="font-semibold text-white">
-              "Installer l'application" ou "Ajouter à l'écran d'accueil"
-            </span>
-            .
-          </p>
-          <button
-            onClick={fermer}
-            className="mt-3 w-full rounded-md bg-white/10 py-2 text-xs font-medium text-white hover:bg-white/20"
-          >
-            J'ai compris
-          </button>
-        </div>
+        </>
       ) : (
         <>
-          <div className="text-sm">
-            <div className="font-medium">Installer ProxiGaz</div>
-            <div className="text-xs text-white/60">Accès rapide depuis votre écran d'accueil</div>
+          <div className="flex items-start gap-2 text-xs text-white/70">
+            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/15 text-[11px] font-semibold">
+              1
+            </span>
+            <span className="min-w-0 flex-1 leading-relaxed">
+              Appuyez sur le menu <span className="font-semibold text-white">⋮</span> en haut à
+              droite de Chrome
+            </span>
           </div>
-          <div className="flex shrink-0 gap-2">
-            <button onClick={fermer} className="text-xs text-white/50 hover:text-white/80">
-              Plus tard
-            </button>
-            <button
-              onClick={installer}
-              className="rounded-md bg-safety-500 px-3 py-1.5 text-xs font-semibold hover:bg-safety-600"
-            >
-              Installer
-            </button>
+          <div className="mt-1.5 flex items-start gap-2 text-xs text-white/70">
+            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/15 text-[11px] font-semibold">
+              2
+            </span>
+            <span className="min-w-0 flex-1 leading-relaxed">
+              Choisissez{" "}
+              <span className="font-semibold text-white">
+                "Installer l'application" ou "Ajouter à l'écran d'accueil"
+              </span>
+            </span>
           </div>
         </>
       )}
+
+      <button
+        onClick={fermer}
+        className="mt-3 w-full rounded-md bg-white/10 py-2 text-xs font-medium text-white hover:bg-white/20"
+      >
+        J'ai compris
+      </button>
     </div>
   );
 }
