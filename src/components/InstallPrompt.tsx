@@ -17,10 +17,15 @@ function estIOS(): boolean {
   return /iPhone|iPad|iPod/i.test(navigator.userAgent);
 }
 
+function estAndroid(): boolean {
+  return /Android/i.test(navigator.userAgent);
+}
+
 export function InstallPrompt() {
   const [evenement, setEvenement] = useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
   const [modeIOS, setModeIOS] = useState(false);
+  const [modeManuelAndroid, setModeManuelAndroid] = useState(false);
 
   useEffect(() => {
     // Si l'app tourne déjà en mode installé (PWA standalone), inutile de proposer l'installation
@@ -42,13 +47,39 @@ export function InstallPrompt() {
     }
 
     window.addEventListener("beforeinstallprompt", onBeforeInstall);
-    return () => window.removeEventListener("beforeinstallprompt", onBeforeInstall);
+
+    // Filet de sécurité (Android uniquement) : sur certains appareils, l'événement peut se
+    // déclencher avant que ce composant n'ait eu le temps de s'abonner. Après un délai, si
+    // rien n'a été capté, on affiche quand même la bannière en mode instructions manuelles
+    // plutôt que de ne rien montrer du tout.
+    let delaiRepli: ReturnType<typeof setTimeout> | undefined;
+    if (estAndroid()) {
+      delaiRepli = setTimeout(() => {
+        setVisible((dejaVisible) => {
+          if (!dejaVisible) setModeManuelAndroid(true);
+          return true;
+        });
+      }, 3000);
+    }
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", onBeforeInstall);
+      if (delaiRepli) clearTimeout(delaiRepli);
+    };
   }, []);
 
   async function installer() {
-    if (!evenement) return;
-    await evenement.prompt();
-    setVisible(false);
+    if (evenement) {
+      try {
+        await evenement.prompt();
+        setVisible(false);
+        return;
+      } catch {
+        // L'événement était présent mais invalide (déjà consommé, expiré...) : on bascule
+        // sur les instructions manuelles plutôt que de laisser le clic sans effet.
+      }
+    }
+    setModeManuelAndroid(true);
   }
 
   function fermer() {
@@ -97,6 +128,24 @@ export function InstallPrompt() {
               Choisissez <span className="font-semibold text-white">Sur l'écran d'accueil</span>
             </span>
           </div>
+          <button
+            onClick={fermer}
+            className="mt-3 w-full rounded-md bg-white/10 py-2 text-xs font-medium text-white hover:bg-white/20"
+          >
+            J'ai compris
+          </button>
+        </div>
+      ) : modeManuelAndroid ? (
+        <div className="w-full">
+          <div className="mb-1.5 text-sm font-medium">Comment installer ProxiGaz</div>
+          <p className="text-xs leading-relaxed text-white/70">
+            Appuyez sur le menu <span className="font-semibold text-white">⋮</span> en haut à
+            droite de votre navigateur, puis choisissez{" "}
+            <span className="font-semibold text-white">
+              "Installer l'application" ou "Ajouter à l'écran d'accueil"
+            </span>
+            .
+          </p>
           <button
             onClick={fermer}
             className="mt-3 w-full rounded-md bg-white/10 py-2 text-xs font-medium text-white hover:bg-white/20"

@@ -1,19 +1,5 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { DeliveryRoute } from "../components/DeliveryRoute";
-
-function IconeBouteille() {
-  return (
-    <svg viewBox="0 0 40 40" className="h-8 w-8">
-      <rect x="15" y="4" width="10" height="6" rx="2" fill="currentColor" opacity="0.6" />
-      <path
-        d="M11 14 Q11 9 20 9 Q29 9 29 14 L29 32 Q29 36 20 36 Q11 36 11 32 Z"
-        fill="currentColor"
-      />
-      <rect x="11" y="22" width="18" height="3" fill="black" opacity="0.12" />
-    </svg>
-  );
-}
 
 function IconePoubelle() {
   return (
@@ -50,9 +36,11 @@ function CommentCaMarcheModal({ onFermer }: { onFermer: () => void }) {
           <div className="overflow-hidden rounded-xl border border-ink/10">
             <div className="h-1.5 bg-safety-500" />
             <div className="p-5">
-              <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-safety-400/15 text-safety-500">
-                <IconeBouteille />
-              </div>
+              <img
+                src="/images/bouteille-gaz.png"
+                alt="Bouteille de gaz ProxiGaz"
+                className="mb-3 h-16 w-auto"
+              />
               <h3 className="font-display text-base font-semibold text-ink">Bouteille de gaz</h3>
               <p className="mt-2 text-sm text-ink/60">
                 Choisissez votre marque et votre taille (B6, B12, B18...), indiquez votre adresse,
@@ -101,57 +89,68 @@ export function Home() {
 
   return (
     <div>
-      <section className="relative overflow-hidden bg-panel px-6 pb-16 pt-16 text-white sm:pb-20 sm:pt-24">
-        <div className="mx-auto max-w-3xl text-center">
-          <div className="animate-fade-in font-display text-4xl font-bold tracking-tight sm:text-5xl">
-            PROXI<span className="text-safety-400">GAZ</span>
-          </div>
-          <p className="mt-4 animate-fade-in text-lg text-white/70" style={{ animationDelay: "0.1s" }}>
-            Fini la corvée du gaz. Fini les ordures qui s'entassent.
-          </p>
-
-          <div
-            className="mt-8 flex animate-fade-in flex-wrap items-center justify-center gap-3"
-            style={{ animationDelay: "0.2s" }}
-          >
-            <Link
-              to="/commander-gaz"
-              className="rounded-md bg-safety-500 px-6 py-3 text-sm font-semibold text-white transition-all hover:scale-105 hover:bg-safety-600"
+      <section className="relative overflow-hidden bg-panel px-6 pb-10 pt-14 text-white sm:pb-0 sm:pt-0">
+        <div className="mx-auto grid max-w-5xl items-center gap-8 sm:grid-cols-2 sm:py-20">
+          <div className="text-center sm:text-left">
+            <div className="animate-fade-in font-display text-4xl font-bold tracking-tight sm:text-5xl">
+              PROXI<span className="text-safety-400">GAZ</span>
+            </div>
+            <p
+              className="mt-4 animate-fade-in text-lg text-white/70"
+              style={{ animationDelay: "0.1s" }}
             >
-              Commander du gaz
-            </Link>
-            <Link
-              to="/demander-ramassage"
-              className="rounded-md bg-gaz-500 px-6 py-3 text-sm font-semibold text-white transition-all hover:scale-105 hover:bg-gaz-600"
+              Fini la corvée du gaz. Fini les ordures qui s'entassent.
+            </p>
+
+            <div
+              className="mt-8 flex animate-fade-in flex-wrap items-center justify-center gap-3 sm:justify-start"
+              style={{ animationDelay: "0.2s" }}
             >
-              Demander un ramassage
-            </Link>
+              <Link
+                to="/commander-gaz"
+                className="rounded-md bg-safety-500 px-6 py-3 text-sm font-semibold text-white transition-all hover:scale-105 hover:bg-safety-600"
+              >
+                Commander du gaz
+              </Link>
+              <Link
+                to="/demander-ramassage"
+                className="rounded-md bg-gaz-500 px-6 py-3 text-sm font-semibold text-white transition-all hover:scale-105 hover:bg-gaz-600"
+              >
+                Demander un ramassage
+              </Link>
+            </div>
+
+            <button
+              onClick={() => setModalOuvert(true)}
+              className="mt-5 inline-flex animate-fade-in items-center gap-1.5 rounded-full border border-white/15 px-4 py-2 text-xs font-medium text-white/70 transition-colors hover:border-white/30 hover:text-white"
+              style={{ animationDelay: "0.28s" }}
+            >
+              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white/15 text-[10px]">
+                ?
+              </span>
+              Comment ça marche
+            </button>
+
+            <div>
+              <Link
+                to="/pro"
+                className="mt-4 inline-block animate-fade-in text-xs text-white/40 underline-offset-4 transition-colors hover:text-white/70 hover:underline"
+                style={{ animationDelay: "0.35s" }}
+              >
+                Vous êtes boutique, livreur ou ramasseur ? Accédez à votre espace pro →
+              </Link>
+            </div>
           </div>
 
-          <button
-            onClick={() => setModalOuvert(true)}
-            className="mt-5 inline-flex animate-fade-in items-center gap-1.5 rounded-full border border-white/15 px-4 py-2 text-xs font-medium text-white/70 transition-colors hover:border-white/30 hover:text-white"
-            style={{ animationDelay: "0.28s" }}
-          >
-            <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white/15 text-[10px]">
-              ?
-            </span>
-            Comment ça marche
-          </button>
-
-          <div>
-            <Link
-              to="/pro"
-              className="mt-4 inline-block animate-fade-in text-xs text-white/40 underline-offset-4 transition-colors hover:text-white/70 hover:underline"
-              style={{ animationDelay: "0.35s" }}
-            >
-              Vous êtes boutique, livreur ou ramasseur ? Accédez à votre espace pro →
-            </Link>
+          <div className="relative order-first sm:order-none sm:self-end">
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 rounded-full bg-safety-500/10 blur-3xl" />
+            <img
+              src="/images/livreur.png"
+              alt="Livreur ProxiGaz avec une bouteille de gaz"
+              className="relative mx-auto h-[280px] w-auto animate-fade-in object-contain sm:h-[420px]"
+              style={{ animationDelay: "0.15s" }}
+            />
           </div>
-        </div>
-
-        <div className="mx-auto mt-12 max-w-xl animate-fade-in" style={{ animationDelay: "0.45s" }}>
-          <DeliveryRoute className="w-full" />
         </div>
       </section>
 
