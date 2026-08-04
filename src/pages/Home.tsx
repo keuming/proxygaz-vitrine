@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { DeliveryRoute } from "../components/DeliveryRoute";
 
@@ -25,29 +26,93 @@ function IconePoubelle() {
   );
 }
 
+function CommentCaMarcheModal({ onFermer }: { onFermer: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 px-4 backdrop-blur-sm animate-overlay-in"
+      onClick={onFermer}
+    >
+      <div
+        className="max-h-[85vh] w-full max-w-2xl animate-modal-pop overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl sm:p-8"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="font-display text-xl font-semibold text-ink">Comment ça marche</h2>
+          <button
+            onClick={onFermer}
+            className="flex h-8 w-8 items-center justify-center rounded-full text-ink/40 hover:bg-ink/5 hover:text-ink/70"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="grid gap-5 sm:grid-cols-2">
+          <div className="overflow-hidden rounded-xl border border-ink/10">
+            <div className="h-1.5 bg-safety-500" />
+            <div className="p-5">
+              <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-safety-400/15 text-safety-500">
+                <IconeBouteille />
+              </div>
+              <h3 className="font-display text-base font-semibold text-ink">Bouteille de gaz</h3>
+              <p className="mt-2 text-sm text-ink/60">
+                Choisissez votre marque et votre taille (B6, B12, B18...), indiquez votre adresse,
+                et une boutique partenaire proche de chez vous confirme et livre votre commande.
+              </p>
+            </div>
+          </div>
+          <div className="overflow-hidden rounded-xl border border-ink/10">
+            <div className="h-1.5 bg-gaz-500" />
+            <div className="p-5">
+              <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-gaz-400/15 text-gaz-500">
+                <IconePoubelle />
+              </div>
+              <h3 className="font-display text-base font-semibold text-ink">Ramassage d'ordures</h3>
+              <p className="mt-2 text-sm text-ink/60">
+                Lancez une demande de ramassage, et le premier ramasseur disponible dans votre
+                zone — particulier ou société — l'accepte et vient récupérer vos poubelles.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <Link
+            to="/commander-gaz"
+            onClick={onFermer}
+            className="rounded-md bg-safety-500 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:scale-105 hover:bg-safety-600"
+          >
+            Commander du gaz
+          </Link>
+          <Link
+            to="/demander-ramassage"
+            onClick={onFermer}
+            className="rounded-md bg-gaz-500 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:scale-105 hover:bg-gaz-600"
+          >
+            Demander un ramassage
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function Home() {
+  const [modalOuvert, setModalOuvert] = useState(false);
+
   return (
     <div>
-      <section className="relative overflow-hidden bg-panel px-6 pb-14 pt-16 text-white sm:pb-20 sm:pt-24">
-        <div className="mx-auto max-w-4xl text-center">
+      <section className="relative overflow-hidden bg-panel px-6 pb-16 pt-16 text-white sm:pb-20 sm:pt-24">
+        <div className="mx-auto max-w-3xl text-center">
           <div className="animate-fade-in font-display text-4xl font-bold tracking-tight sm:text-5xl">
             PROXI<span className="text-safety-400">GAZ</span>
           </div>
           <p className="mt-4 animate-fade-in text-lg text-white/70" style={{ animationDelay: "0.1s" }}>
             Fini la corvée du gaz. Fini les ordures qui s'entassent.
           </p>
-          <p
-            className="mx-auto mt-2 max-w-xl animate-fade-in text-sm text-white/50"
-            style={{ animationDelay: "0.2s" }}
-          >
-            Personne ne devrait envoyer un enfant chercher une bouteille de boutique en boutique,
-            ni vivre avec des poubelles qui s'accumulent faute de passage. ProxiGaz livre votre gaz
-            et ramasse vos ordures, en un clic — où que vous soyez en Afrique.
-          </p>
 
           <div
             className="mt-8 flex animate-fade-in flex-wrap items-center justify-center gap-3"
-            style={{ animationDelay: "0.3s" }}
+            style={{ animationDelay: "0.2s" }}
           >
             <Link
               to="/commander-gaz"
@@ -63,58 +128,30 @@ export function Home() {
             </Link>
           </div>
 
-          <Link
-            to="/pro"
-            className="mt-4 inline-block animate-fade-in text-xs text-white/40 underline-offset-4 transition-colors hover:text-white/70 hover:underline"
-            style={{ animationDelay: "0.35s" }}
+          <button
+            onClick={() => setModalOuvert(true)}
+            className="mt-5 inline-flex animate-fade-in items-center gap-1.5 rounded-full border border-white/15 px-4 py-2 text-xs font-medium text-white/70 transition-colors hover:border-white/30 hover:text-white"
+            style={{ animationDelay: "0.28s" }}
           >
-            Vous êtes boutique, livreur ou ramasseur ? Accédez à votre espace pro →
-          </Link>
+            <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white/15 text-[10px]">
+              ?
+            </span>
+            Comment ça marche
+          </button>
+
+          <div>
+            <Link
+              to="/pro"
+              className="mt-4 inline-block animate-fade-in text-xs text-white/40 underline-offset-4 transition-colors hover:text-white/70 hover:underline"
+              style={{ animationDelay: "0.35s" }}
+            >
+              Vous êtes boutique, livreur ou ramasseur ? Accédez à votre espace pro →
+            </Link>
+          </div>
         </div>
 
-        <div className="mx-auto mt-10 max-w-2xl animate-fade-in" style={{ animationDelay: "0.45s" }}>
+        <div className="mx-auto mt-12 max-w-xl animate-fade-in" style={{ animationDelay: "0.45s" }}>
           <DeliveryRoute className="w-full" />
-          <div className="mt-1 flex justify-between px-4 text-[11px] uppercase tracking-wide text-white/30">
-            <span>Boutique</span>
-            <span>Chez vous</span>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-5xl px-6 py-16">
-        <h2 className="text-center font-display text-2xl font-semibold text-ink">
-          Comment ça marche
-        </h2>
-        <div className="mt-10 grid gap-6 sm:grid-cols-2">
-          <div className="animate-slide-up overflow-hidden rounded-xl border border-ink/10 bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg">
-            <div className="h-1.5 bg-safety-500" />
-            <div className="p-6">
-              <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-full bg-safety-400/15 text-safety-500">
-                <IconeBouteille />
-              </div>
-              <h3 className="font-display text-lg font-semibold text-ink">Bouteille de gaz</h3>
-              <p className="mt-2 text-sm text-ink/60">
-                Choisissez votre marque et votre taille (B6, B12, B18...), indiquez votre adresse,
-                et une boutique partenaire proche de chez vous confirme et livre votre commande.
-              </p>
-            </div>
-          </div>
-          <div
-            className="animate-slide-up overflow-hidden rounded-xl border border-ink/10 bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
-            style={{ animationDelay: "0.1s" }}
-          >
-            <div className="h-1.5 bg-gaz-500" />
-            <div className="p-6">
-              <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-full bg-gaz-400/15 text-gaz-500">
-                <IconePoubelle />
-              </div>
-              <h3 className="font-display text-lg font-semibold text-ink">Ramassage d'ordures</h3>
-              <p className="mt-2 text-sm text-ink/60">
-                Lancez une demande de ramassage, et le premier ramasseur disponible dans votre
-                zone — particulier ou société — l'accepte et vient récupérer vos poubelles.
-              </p>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -126,7 +163,7 @@ export function Home() {
             backgroundSize: "24px 24px",
           }}
         />
-        <div className="relative mx-auto max-w-4xl text-center">
+        <div className="relative mx-auto max-w-3xl text-center">
           <h2 className="font-display text-2xl font-semibold text-ink">
             Boutique de gaz, livreur, ou ramasseur ?
           </h2>
@@ -142,6 +179,8 @@ export function Home() {
           </Link>
         </div>
       </section>
+
+      {modalOuvert && <CommentCaMarcheModal onFermer={() => setModalOuvert(false)} />}
     </div>
   );
 }
