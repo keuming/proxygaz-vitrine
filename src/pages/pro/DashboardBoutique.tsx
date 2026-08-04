@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { ProHeader } from "../../components/ProHeader";
+import { BottomNav } from "../../components/BottomNav";
+import { IconeCommandes, IconeStock, IconeCaisse, IconePlus } from "../../components/NavIcons";
 import { CommandesTab } from "./boutique/CommandesTab";
 import { StockTab } from "./boutique/StockTab";
 import { FournisseursTab } from "./boutique/FournisseursTab";
@@ -7,46 +9,76 @@ import { ApprovisionnementsTab } from "./boutique/ApprovisionnementsTab";
 import { HistoriqueTab } from "./boutique/HistoriqueTab";
 import { EncaissementsTab } from "./boutique/EncaissementsTab";
 
-type Onglet = "commandes" | "encaissements" | "stock" | "fournisseurs" | "approvisionnements" | "historique";
+type OngletPrincipal = "commandes" | "stock" | "encaissements" | "plus";
+type SousOngletPlus = "fournisseurs" | "approvisionnements" | "historique";
 
-const ONGLETS: { value: Onglet; label: string }[] = [
-  { value: "commandes", label: "Commandes" },
-  { value: "encaissements", label: "Encaissements" },
-  { value: "stock", label: "Stock" },
-  { value: "fournisseurs", label: "Fournisseurs" },
-  { value: "approvisionnements", label: "Approvisionnements" },
-  { value: "historique", label: "Historique" },
+const NAV_ITEMS = [
+  { value: "commandes" as const, label: "Commandes", icon: <IconeCommandes /> },
+  { value: "stock" as const, label: "Stock", icon: <IconeStock /> },
+  { value: "encaissements" as const, label: "Caisse", icon: <IconeCaisse /> },
+  { value: "plus" as const, label: "Plus", icon: <IconePlus /> },
+];
+
+const SOUS_ONGLETS_PLUS: { value: SousOngletPlus; label: string; description: string }[] = [
+  { value: "fournisseurs", label: "Fournisseurs", description: "Vos partenaires d'approvisionnement" },
+  { value: "approvisionnements", label: "Approvisionnements", description: "Bons de commande et réceptions" },
+  { value: "historique", label: "Historique", description: "Tous les mouvements de stock" },
 ];
 
 export function DashboardBoutique() {
-  const [onglet, setOnglet] = useState<Onglet>("commandes");
+  const [onglet, setOnglet] = useState<OngletPrincipal>("commandes");
+  const [sousOngletPlus, setSousOngletPlus] = useState<SousOngletPlus | null>(null);
+
+  function changerOnglet(valeur: string) {
+    setOnglet(valeur as OngletPrincipal);
+    if (valeur !== "plus") setSousOngletPlus(null);
+  }
 
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="min-h-screen bg-surface pb-24">
       <ProHeader titre="Espace boutique" sousTitre="Gestion complète de votre point de vente" />
 
-      <div className="mx-auto max-w-4xl px-4 py-6 sm:px-8">
-        <div className="mb-6 flex gap-2 overflow-x-auto pb-1">
-          {ONGLETS.map((o) => (
-            <button
-              key={o.value}
-              onClick={() => setOnglet(o.value)}
-              className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                onglet === o.value ? "bg-steel-500 text-white" : "bg-white text-ink/60 hover:bg-ink/5"
-              }`}
-            >
-              {o.label}
-            </button>
-          ))}
-        </div>
-
+      <div className="mx-auto max-w-4xl px-4 py-5 sm:px-8">
         {onglet === "commandes" && <CommandesTab />}
-        {onglet === "encaissements" && <EncaissementsTab />}
         {onglet === "stock" && <StockTab />}
-        {onglet === "fournisseurs" && <FournisseursTab />}
-        {onglet === "approvisionnements" && <ApprovisionnementsTab />}
-        {onglet === "historique" && <HistoriqueTab />}
+        {onglet === "encaissements" && <EncaissementsTab />}
+
+        {onglet === "plus" && (
+          <>
+            {sousOngletPlus === null ? (
+              <div className="space-y-3">
+                {SOUS_ONGLETS_PLUS.map((s) => (
+                  <button
+                    key={s.value}
+                    onClick={() => setSousOngletPlus(s.value)}
+                    className="flex w-full items-center justify-between rounded-lg border border-ink/10 bg-white p-4 text-left shadow-sm transition-colors hover:border-steel-400"
+                  >
+                    <div>
+                      <div className="text-sm font-semibold text-ink">{s.label}</div>
+                      <div className="text-xs text-ink/50">{s.description}</div>
+                    </div>
+                    <span className="text-ink/30">›</span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div>
+                <button
+                  onClick={() => setSousOngletPlus(null)}
+                  className="mb-4 flex items-center gap-1 text-sm font-medium text-steel-600"
+                >
+                  ← Retour
+                </button>
+                {sousOngletPlus === "fournisseurs" && <FournisseursTab />}
+                {sousOngletPlus === "approvisionnements" && <ApprovisionnementsTab />}
+                {sousOngletPlus === "historique" && <HistoriqueTab />}
+              </div>
+            )}
+          </>
+        )}
       </div>
+
+      <BottomNav items={NAV_ITEMS} actif={onglet} onChange={changerOnglet} />
     </div>
   );
 }

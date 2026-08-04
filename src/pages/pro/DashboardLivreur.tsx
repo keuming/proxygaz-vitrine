@@ -3,6 +3,8 @@ import { trpcQuery, trpcMutation } from "../../lib/api";
 import { Card } from "../../components/Card";
 import { StatusGauge } from "../../components/StatusGauge";
 import { ProHeader } from "../../components/ProHeader";
+import { BottomNav } from "../../components/BottomNav";
+import { IconeDisponibles, IconeEnCours } from "../../components/NavIcons";
 import { CreditIndicator } from "../../components/CreditIndicator";
 import { CreditPurchaseModal } from "../../components/CreditPurchaseModal";
 import { useAuth } from "../../lib/auth";
@@ -125,56 +127,47 @@ export function DashboardLivreur() {
     await trpcMutation("gaz.demanderCreditLivreur", { quantiteCredits: quantite, referencePaiement });
   }
 
+  const NAV_ITEMS = [
+    {
+      value: "disponibles" as const,
+      label: "Disponibles",
+      icon: <IconeDisponibles />,
+      badge: disponibles.length,
+    },
+    { value: "mesLivraisons" as const, label: "Mes livraisons", icon: <IconeEnCours /> },
+  ];
+
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="min-h-screen bg-surface pb-24">
       <ProHeader titre="Espace livreur" sousTitre="Livraisons de bouteilles de gaz" />
 
-      <div className="mx-auto max-w-4xl px-4 py-6 sm:px-8">
+      <div className="mx-auto max-w-4xl px-4 py-5 sm:px-8">
         {credits !== null && (
-          <div className="mb-6">
+          <div className="mb-5">
             <CreditIndicator credits={credits} onAcheter={() => setAchatOuvert(true)} />
           </div>
         )}
 
         {stats && (
-          <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <Card className="p-4">
-              <div className="font-data text-xl font-bold text-ink">{stats.totalLivraisons}</div>
-              <div className="text-xs text-ink/50">Livraisons au total</div>
+          <div className="mb-5 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+            <Card className="p-3">
+              <div className="font-data text-lg font-bold text-ink">{stats.totalLivraisons}</div>
+              <div className="text-xs text-ink/50">Total</div>
             </Card>
-            <Card className="p-4">
-              <div className="font-data text-xl font-bold text-gaz-600">{stats.livraisonsCeMois}</div>
+            <Card className="p-3">
+              <div className="font-data text-lg font-bold text-gaz-600">{stats.livraisonsCeMois}</div>
               <div className="text-xs text-ink/50">Ce mois-ci</div>
             </Card>
-            <Card className="p-4">
-              <div className="font-data text-xl font-bold text-steel-600">{stats.tauxReussite}%</div>
-              <div className="text-xs text-ink/50">Taux de réussite</div>
+            <Card className="p-3">
+              <div className="font-data text-lg font-bold text-steel-600">{stats.tauxReussite}%</div>
+              <div className="text-xs text-ink/50">Réussite</div>
             </Card>
-            <Card className="p-4">
-              <div className="font-data text-xl font-bold text-safety-500">{stats.enCoursActuellement}</div>
+            <Card className="p-3">
+              <div className="font-data text-lg font-bold text-safety-500">{stats.enCoursActuellement}</div>
               <div className="text-xs text-ink/50">En cours</div>
             </Card>
           </div>
         )}
-
-        <div className="mb-6 flex gap-2">
-          <button
-            onClick={() => setOnglet("disponibles")}
-            className={`rounded-full px-4 py-2 text-sm font-medium ${
-              onglet === "disponibles" ? "bg-steel-500 text-white" : "bg-white text-ink/60"
-            }`}
-          >
-            Disponibles
-          </button>
-          <button
-            onClick={() => setOnglet("mesLivraisons")}
-            className={`rounded-full px-4 py-2 text-sm font-medium ${
-              onglet === "mesLivraisons" ? "bg-steel-500 text-white" : "bg-white text-ink/60"
-            }`}
-          >
-            Mes livraisons
-          </button>
-        </div>
 
         {erreur && (
           <div className="mb-4 rounded-md bg-valve-400/10 px-4 py-3 text-sm text-valve-600">
@@ -256,6 +249,12 @@ export function DashboardLivreur() {
           </div>
         )}
       </div>
+
+      <BottomNav
+        items={NAV_ITEMS}
+        actif={onglet}
+        onChange={(v) => setOnglet(v as "disponibles" | "mesLivraisons")}
+      />
 
       {achatOuvert && (
         <CreditPurchaseModal

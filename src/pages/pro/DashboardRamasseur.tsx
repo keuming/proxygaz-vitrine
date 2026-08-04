@@ -3,6 +3,8 @@ import { trpcQuery, trpcMutation } from "../../lib/api";
 import { Card } from "../../components/Card";
 import { StatusGauge } from "../../components/StatusGauge";
 import { ProHeader } from "../../components/ProHeader";
+import { BottomNav } from "../../components/BottomNav";
+import { IconeDisponibles, IconeEnCours, IconeCaisse } from "../../components/NavIcons";
 import { EncaissementsRamasseurTab } from "./EncaissementsRamasseurTab";
 import { CreditIndicator } from "../../components/CreditIndicator";
 import { CreditPurchaseModal } from "../../components/CreditPurchaseModal";
@@ -140,66 +142,50 @@ export function DashboardRamasseur() {
     });
   }
 
+  const NAV_ITEMS = [
+    {
+      value: "disponibles" as const,
+      label: "Disponibles",
+      icon: <IconeDisponibles />,
+      badge: disponibles.length,
+    },
+    { value: "mesRamassages" as const, label: "En cours", icon: <IconeEnCours /> },
+    { value: "encaissements" as const, label: "Caisse", icon: <IconeCaisse /> },
+  ];
+
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="min-h-screen bg-surface pb-24">
       <ProHeader titre="Espace ramasseur" sousTitre="Demandes de ramassage de poubelles" />
 
-      <div className="mx-auto max-w-4xl px-4 py-6 sm:px-8">
+      <div className="mx-auto max-w-4xl px-4 py-5 sm:px-8">
         {credits !== null && (
-          <div className="mb-6">
+          <div className="mb-5">
             <CreditIndicator credits={credits} onAcheter={() => setAchatOuvert(true)} />
           </div>
         )}
 
         {stats && (
-          <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <Card className="p-4">
-              <div className="font-data text-xl font-bold text-ink">{stats.totalRamassages}</div>
-              <div className="text-xs text-ink/50">Ramassages au total</div>
+          <div className="mb-5 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+            <Card className="p-3">
+              <div className="font-data text-lg font-bold text-ink">{stats.totalRamassages}</div>
+              <div className="text-xs text-ink/50">Total</div>
             </Card>
-            <Card className="p-4">
-              <div className="font-data text-xl font-bold text-gaz-600">{stats.ramassagesCeMois}</div>
+            <Card className="p-3">
+              <div className="font-data text-lg font-bold text-gaz-600">{stats.ramassagesCeMois}</div>
               <div className="text-xs text-ink/50">Ce mois-ci</div>
             </Card>
-            <Card className="p-4">
-              <div className="font-data text-xl font-bold text-steel-600">{stats.enCoursActuellement}</div>
+            <Card className="p-3">
+              <div className="font-data text-lg font-bold text-steel-600">{stats.enCoursActuellement}</div>
               <div className="text-xs text-ink/50">En cours</div>
             </Card>
-            <Card className="p-4">
-              <div className="font-data text-xl font-bold text-safety-500">
+            <Card className="p-3">
+              <div className="font-data text-lg font-bold text-safety-500">
                 {stats.valideesEnAttenteDeDemarrage}
               </div>
               <div className="text-xs text-ink/50">À démarrer</div>
             </Card>
           </div>
         )}
-
-        <div className="mb-6 flex gap-2">
-          <button
-            onClick={() => setOnglet("disponibles")}
-            className={`rounded-full px-4 py-2 text-sm font-medium ${
-              onglet === "disponibles" ? "bg-steel-500 text-white" : "bg-white text-ink/60"
-            }`}
-          >
-            Disponibles
-          </button>
-          <button
-            onClick={() => setOnglet("mesRamassages")}
-            className={`rounded-full px-4 py-2 text-sm font-medium ${
-              onglet === "mesRamassages" ? "bg-steel-500 text-white" : "bg-white text-ink/60"
-            }`}
-          >
-            Mes ramassages
-          </button>
-          <button
-            onClick={() => setOnglet("encaissements")}
-            className={`rounded-full px-4 py-2 text-sm font-medium ${
-              onglet === "encaissements" ? "bg-steel-500 text-white" : "bg-white text-ink/60"
-            }`}
-          >
-            Encaissements
-          </button>
-        </div>
 
         {erreur && (
           <div className="mb-4 rounded-md bg-valve-400/10 px-4 py-3 text-sm text-valve-600">
@@ -291,6 +277,12 @@ export function DashboardRamasseur() {
           </div>
         )}
       </div>
+
+      <BottomNav
+        items={NAV_ITEMS}
+        actif={onglet}
+        onChange={(v) => setOnglet(v as "disponibles" | "mesRamassages" | "encaissements")}
+      />
 
       {achatOuvert && (
         <CreditPurchaseModal
