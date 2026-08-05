@@ -154,10 +154,11 @@ export function DashboardRamasseur() {
   ];
 
   return (
-    <div className="min-h-screen bg-surface pb-24">
+    <div className="fixed inset-0 flex flex-col overflow-hidden bg-surface">
       <ProHeader titre="Espace ramasseur" sousTitre="Demandes de ramassage de poubelles" />
 
-      <div className="mx-auto max-w-4xl px-4 py-5 sm:px-8">
+      <div className="flex-1 overflow-y-auto overscroll-contain">
+        <div className="mx-auto max-w-4xl px-4 py-5 sm:px-8">
         {credits !== null && (
           <div className="mb-5">
             <CreditIndicator credits={credits} onAcheter={() => setAchatOuvert(true)} />
@@ -276,6 +277,7 @@ export function DashboardRamasseur() {
             )}
           </div>
         )}
+        </div>
       </div>
 
       <BottomNav

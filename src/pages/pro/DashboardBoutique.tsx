@@ -43,50 +43,52 @@ export function DashboardBoutique() {
   }
 
   return (
-    <div className="min-h-screen bg-surface pb-24">
+    <div className="fixed inset-0 flex flex-col overflow-hidden bg-surface">
       <ProHeader
         titre={nomBoutique ?? "Espace boutique"}
         sousTitre="Gestion complète de votre point de vente"
       />
 
-      <div className="mx-auto max-w-4xl px-4 py-5 sm:px-8">
-        {onglet === "commandes" && <CommandesTab />}
-        {onglet === "stock" && <StockTab />}
-        {onglet === "encaissements" && <EncaissementsTab />}
+      <div className="flex-1 overflow-y-auto overscroll-contain">
+        <div className="mx-auto max-w-4xl px-4 py-5 sm:px-8">
+          {onglet === "commandes" && <CommandesTab />}
+          {onglet === "stock" && <StockTab />}
+          {onglet === "encaissements" && <EncaissementsTab />}
 
-        {onglet === "plus" && (
-          <>
-            {sousOngletPlus === null ? (
-              <div className="space-y-3">
-                {SOUS_ONGLETS_PLUS.map((s) => (
+          {onglet === "plus" && (
+            <>
+              {sousOngletPlus === null ? (
+                <div className="space-y-3">
+                  {SOUS_ONGLETS_PLUS.map((s) => (
+                    <button
+                      key={s.value}
+                      onClick={() => setSousOngletPlus(s.value)}
+                      className="flex w-full items-center justify-between rounded-lg border border-ink/10 bg-white p-4 text-left shadow-sm transition-colors hover:border-steel-400"
+                    >
+                      <div>
+                        <div className="text-sm font-semibold text-ink">{s.label}</div>
+                        <div className="text-xs text-ink/50">{s.description}</div>
+                      </div>
+                      <span className="text-ink/30">›</span>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div>
                   <button
-                    key={s.value}
-                    onClick={() => setSousOngletPlus(s.value)}
-                    className="flex w-full items-center justify-between rounded-lg border border-ink/10 bg-white p-4 text-left shadow-sm transition-colors hover:border-steel-400"
+                    onClick={() => setSousOngletPlus(null)}
+                    className="mb-4 flex items-center gap-1 text-sm font-medium text-steel-600"
                   >
-                    <div>
-                      <div className="text-sm font-semibold text-ink">{s.label}</div>
-                      <div className="text-xs text-ink/50">{s.description}</div>
-                    </div>
-                    <span className="text-ink/30">›</span>
+                    ← Retour
                   </button>
-                ))}
-              </div>
-            ) : (
-              <div>
-                <button
-                  onClick={() => setSousOngletPlus(null)}
-                  className="mb-4 flex items-center gap-1 text-sm font-medium text-steel-600"
-                >
-                  ← Retour
-                </button>
-                {sousOngletPlus === "fournisseurs" && <FournisseursTab />}
-                {sousOngletPlus === "approvisionnements" && <ApprovisionnementsTab />}
-                {sousOngletPlus === "historique" && <HistoriqueTab />}
-              </div>
-            )}
-          </>
-        )}
+                  {sousOngletPlus === "fournisseurs" && <FournisseursTab />}
+                  {sousOngletPlus === "approvisionnements" && <ApprovisionnementsTab />}
+                  {sousOngletPlus === "historique" && <HistoriqueTab />}
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
       <BottomNav items={NAV_ITEMS} actif={onglet} onChange={changerOnglet} />
