@@ -4,7 +4,7 @@ import { Card } from "../../components/Card";
 import { StatusGauge } from "../../components/StatusGauge";
 import { ProHeader } from "../../components/ProHeader";
 import { BottomNav } from "../../components/BottomNav";
-import { IconeStock, IconeBoutique, IconeCaisse } from "../../components/NavIcons";
+import { IconeStock, IconeBoutique, IconeRamassage, IconeCaisse } from "../../components/NavIcons";
 import { CreditIndicator } from "../../components/CreditIndicator";
 import { CreditPurchaseModal } from "../../components/CreditPurchaseModal";
 import { useAuth } from "../../lib/auth";
@@ -27,10 +27,22 @@ interface Boutique {
   createdAt: string;
 }
 
+interface Ramasseur {
+  id: string;
+  nom: string;
+  telephone: string;
+  vehicule: string | null;
+  zonesCouvertes: string[];
+  statutValidation: string;
+  nombreRamassages: number;
+}
+
 interface StatsSociete {
   nombreLivreurs: number;
   nombreBoutiques: number;
+  nombreRamasseurs: number;
   totalLivraisons: number;
+  totalRamassages: number;
   enCoursActuellement: number;
 }
 
@@ -49,19 +61,30 @@ const CHAMPS_BOUTIQUE_INITIAUX = {
   adresse: "",
 };
 
+const CHAMPS_RAMASSEUR_INITIAUX = {
+  nom: "",
+  telephone: "",
+  codePin: "",
+  vehicule: "",
+  zonesCouvertes: "",
+};
+
 export function DashboardSociete() {
   const { user } = useAuth();
-  const [onglet, setOnglet] = useState<"livreurs" | "boutiques" | "credits">("livreurs");
+  const [onglet, setOnglet] = useState<"livreurs" | "boutiques" | "ramasseurs" | "credits">("livreurs");
   const [nomSociete, setNomSociete] = useState<string | null>(null);
   const [livreurs, setLivreurs] = useState<Livreur[]>([]);
   const [boutiques, setBoutiques] = useState<Boutique[]>([]);
+  const [ramasseurs, setRamasseurs] = useState<Ramasseur[]>([]);
   const [stats, setStats] = useState<StatsSociete | null>(null);
   const [credits, setCredits] = useState<number | null>(null);
   const [achatOuvert, setAchatOuvert] = useState(false);
   const [ajoutLivreurOuvert, setAjoutLivreurOuvert] = useState(false);
   const [ajoutBoutiqueOuvert, setAjoutBoutiqueOuvert] = useState(false);
+  const [ajoutRamasseurOuvert, setAjoutRamasseurOuvert] = useState(false);
   const [champsLivreur, setChampsLivreur] = useState(CHAMPS_LIVREUR_INITIAUX);
   const [champsBoutique, setChampsBoutique] = useState(CHAMPS_BOUTIQUE_INITIAUX);
+  const [champsRamasseur, setChampsRamasseur] = useState(CHAMPS_RAMASSEUR_INITIAUX);
   const [ajoutEnCours, setAjoutEnCours] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
 
@@ -79,6 +102,10 @@ export function DashboardSociete() {
     trpcQuery<Boutique[]>("gaz.mesBoutiquesSociete").then(setBoutiques).catch((e) => setErreur(e.message));
   }, []);
 
+  const chargerRamasseurs = useCallback(() => {
+    trpcQuery<Ramasseur[]>("ramassage.mesRamasseursSociete").then(setRamasseurs).catch((e) => setErreur(e.message));
+  }, []);
+
   const chargerStats = useCallback(() => {
     trpcQuery<StatsSociete>("gaz.statsSociete").then(setStats).catch(() => {});
   }, []);
@@ -93,9 +120,10 @@ export function DashboardSociete() {
     chargerProfil();
     chargerLivreurs();
     chargerBoutiques();
+    chargerRamasseurs();
     chargerStats();
     chargerCredits();
-  }, [chargerProfil, chargerLivreurs, chargerBoutiques, chargerStats, chargerCredits]);
+  }, [chargerProfil, chargerLivreurs, chargerBoutiques, chargerRamasseurs, chargerStats, chargerCredits]);
 
   async function ajouterLivreur(e: FormEvent) {
     e.preventDefault();
@@ -146,9 +174,33 @@ export function DashboardSociete() {
     await trpcMutation("gaz.demanderCreditSociete", { quantiteCredits: quantite, referencePaiement });
   }
 
+  async function ajouterRamasseur(e: FormEvent) {
+    e.preventDefault();
+    setAjoutEnCours(true);
+    setErreur(null);
+    try {
+      await trpcMutation("ramassage.ajouterRamasseurSousSociete", {
+        nom: champsRamasseur.nom,
+        telephone: champsRamasseur.telephone,
+        codePin: champsRamasseur.codePin,
+        vehicule: champsRamasseur.vehicule || undefined,
+        zonesCouvertes: champsRamasseur.zonesCouvertes.split(",").map((z) => z.trim()).filter(Boolean),
+      });
+      setAjoutRamasseurOuvert(false);
+      setChampsRamasseur(CHAMPS_RAMASSEUR_INITIAUX);
+      chargerRamasseurs();
+      chargerStats();
+    } catch (e) {
+      setErreur(e instanceof Error ? e.message : "Erreur lors de l'ajout du ramasseur");
+    } finally {
+      setAjoutEnCours(false);
+    }
+  }
+
   const NAV_ITEMS = [
     { value: "livreurs" as const, label: "Livreurs", icon: <IconeStock /> },
     { value: "boutiques" as const, label: "Boutiques", icon: <IconeBoutique /> },
+    { value: "ramasseurs" as const, label: "Ramasseurs", icon: <IconeRamassage /> },
     { value: "credits" as const, label: "Crédits", icon: <IconeCaisse /> },
   ];
 
@@ -159,7 +211,7 @@ export function DashboardSociete() {
       <div className="flex-1 overflow-x-hidden overflow-y-auto overscroll-contain">
         <div className="mx-auto max-w-4xl px-4 py-5 sm:px-8">
           {stats && (
-            <div className="mb-5 grid grid-cols-4 gap-2">
+            <div className="mb-5 grid grid-cols-3 gap-2">
               <Card className="p-3">
                 <div className="font-data text-lg font-bold text-ink">{stats.nombreLivreurs}</div>
                 <div className="text-xs text-ink/50">Livreurs</div>
@@ -169,12 +221,18 @@ export function DashboardSociete() {
                 <div className="text-xs text-ink/50">Boutiques</div>
               </Card>
               <Card className="p-3">
-                <div className="font-data text-lg font-bold text-gaz-600">{stats.totalLivraisons}</div>
-                <div className="text-xs text-ink/50">Livraisons</div>
+                <div className="font-data text-lg font-bold text-ink">{stats.nombreRamasseurs}</div>
+                <div className="text-xs text-ink/50">Ramasseurs</div>
               </Card>
               <Card className="p-3">
+                <div className="font-data text-lg font-bold text-gaz-600">
+                  {stats.totalLivraisons + stats.totalRamassages}
+                </div>
+                <div className="text-xs text-ink/50">Courses</div>
+              </Card>
+              <Card className="col-span-2 p-3">
                 <div className="font-data text-lg font-bold text-safety-500">{stats.enCoursActuellement}</div>
-                <div className="text-xs text-ink/50">En cours</div>
+                <div className="text-xs text-ink/50">En cours (livraisons + ramassages)</div>
               </Card>
             </div>
           )}
@@ -247,6 +305,41 @@ export function DashboardSociete() {
             </div>
           )}
 
+          {onglet === "ramasseurs" && (
+            <div>
+              <button
+                onClick={() => setAjoutRamasseurOuvert(true)}
+                className="mb-4 w-full rounded-md bg-steel-500 py-2.5 text-sm font-semibold text-white hover:bg-steel-600"
+              >
+                + Ajouter un ramasseur
+              </button>
+
+              {ramasseurs.length === 0 ? (
+                <p className="text-sm text-ink/40">
+                  Aucun ramasseur pour l'instant. Ajoutez votre premier ramasseur ci-dessus.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {ramasseurs.map((r) => (
+                    <Card key={r.id} className="p-4">
+                      <div className="mb-1 flex items-center justify-between">
+                        <div className="text-sm font-medium text-ink">{r.nom}</div>
+                        <StatusGauge statut={r.statutValidation} />
+                      </div>
+                      <div className="font-data text-xs text-ink/50">{r.telephone}</div>
+                      <div className="mt-2 flex items-center justify-between text-xs text-ink/50">
+                        <span>{r.vehicule ?? "Véhicule non précisé"}</span>
+                        <span className="font-data font-medium text-ink">
+                          {r.nombreRamassages} ramassage{r.nombreRamassages !== 1 ? "s" : ""}
+                        </span>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {onglet === "credits" && (
             <div>
               {credits !== null && (
@@ -255,9 +348,10 @@ export function DashboardSociete() {
                 </div>
               )}
               <p className="text-xs text-ink/40">
-                Ce solde est un pot commun, partagé par tous vos livreurs et vos boutiques.
-                Chaque livraison acceptée par un livreur, ainsi que chaque commande assignée
-                à une boutique, débite ce pot commun de 1 crédit (100 FCFA).
+                Ce solde est un pot commun, partagé par tous vos livreurs, vos boutiques et
+                vos ramasseurs. Chaque livraison acceptée par un livreur, chaque commande
+                assignée à une boutique, et chaque demande de ramassage acceptée par un
+                ramasseur, débite ce pot commun de 1 crédit (100 FCFA).
               </p>
             </div>
           )}
@@ -267,7 +361,7 @@ export function DashboardSociete() {
       <BottomNav
         items={NAV_ITEMS}
         actif={onglet}
-        onChange={(v) => setOnglet(v as "livreurs" | "boutiques" | "credits")}
+        onChange={(v) => setOnglet(v as "livreurs" | "boutiques" | "ramasseurs" | "credits")}
       />
 
       {ajoutLivreurOuvert && (
@@ -394,6 +488,76 @@ export function DashboardSociete() {
                 className="w-full rounded-md bg-steel-500 py-2.5 text-sm font-semibold text-white hover:bg-steel-600 disabled:opacity-60"
               >
                 {ajoutEnCours ? "Ajout..." : "Ajouter cette boutique"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {ajoutRamasseurOuvert && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 px-4 backdrop-blur-sm animate-overlay-in">
+          <div className="w-full max-w-sm animate-modal-pop rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="font-display text-lg font-semibold text-ink">Ajouter un ramasseur</h2>
+              <button onClick={() => setAjoutRamasseurOuvert(false)} className="text-ink/30 hover:text-ink/60">
+                ✕
+              </button>
+            </div>
+            <form onSubmit={ajouterRamasseur}>
+              <label className="mb-1 block text-xs font-medium text-ink/60">Nom</label>
+              <input
+                className="mb-3 w-full rounded-md border border-ink/15 px-3 py-2 text-sm focus:border-steel-500"
+                value={champsRamasseur.nom}
+                onChange={(e) => setChampsRamasseur({ ...champsRamasseur, nom: e.target.value })}
+                required
+              />
+              <label className="mb-1 block text-xs font-medium text-ink/60">
+                Téléphone (identifiant de connexion)
+              </label>
+              <input
+                className="mb-3 w-full rounded-md border border-ink/15 px-3 py-2 text-sm focus:border-steel-500"
+                value={champsRamasseur.telephone}
+                onChange={(e) => setChampsRamasseur({ ...champsRamasseur, telephone: e.target.value })}
+                required
+              />
+              <label className="mb-1 block text-xs font-medium text-ink/60">
+                Code PIN (4 chiffres) — servira à sa connexion
+              </label>
+              <input
+                type="password"
+                inputMode="numeric"
+                pattern="\d{4}"
+                maxLength={4}
+                className="mb-3 w-full rounded-md border border-ink/15 px-3 py-2 text-center text-sm tracking-[0.5em] focus:border-steel-500"
+                value={champsRamasseur.codePin}
+                onChange={(e) =>
+                  setChampsRamasseur({ ...champsRamasseur, codePin: e.target.value.replace(/\D/g, "").slice(0, 4) })
+                }
+                required
+              />
+              <label className="mb-1 block text-xs font-medium text-ink/60">Véhicule</label>
+              <input
+                placeholder="camion, tricycle..."
+                className="mb-3 w-full rounded-md border border-ink/15 px-3 py-2 text-sm focus:border-steel-500"
+                value={champsRamasseur.vehicule}
+                onChange={(e) => setChampsRamasseur({ ...champsRamasseur, vehicule: e.target.value })}
+              />
+              <label className="mb-1 block text-xs font-medium text-ink/60">
+                Zones couvertes (séparées par des virgules)
+              </label>
+              <input
+                placeholder="Cocody, Marcory, Yopougon"
+                className="mb-4 w-full rounded-md border border-ink/15 px-3 py-2 text-sm focus:border-steel-500"
+                value={champsRamasseur.zonesCouvertes}
+                onChange={(e) => setChampsRamasseur({ ...champsRamasseur, zonesCouvertes: e.target.value })}
+                required
+              />
+              <button
+                type="submit"
+                disabled={ajoutEnCours}
+                className="w-full rounded-md bg-steel-500 py-2.5 text-sm font-semibold text-white hover:bg-steel-600 disabled:opacity-60"
+              >
+                {ajoutEnCours ? "Ajout..." : "Ajouter ce ramasseur"}
               </button>
             </form>
           </div>

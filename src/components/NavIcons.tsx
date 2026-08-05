@@ -37,6 +37,18 @@ export function IconeBoutique() {
   );
 }
 
+export function IconeRamassage() {
+  return (
+    <Base>
+      <path d="M5 7h14" strokeLinecap="round" />
+      <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" strokeLinejoin="round" />
+      <path d="M6.5 7l1 12a1.5 1.5 0 0 0 1.5 1.4h6a1.5 1.5 0 0 0 1.5-1.4l1-12" strokeLinejoin="round" />
+      <path d="M10 10.5v6" strokeLinecap="round" />
+      <path d="M14 10.5v6" strokeLinecap="round" />
+    </Base>
+  );
+}
+
 export function IconeCaisse() {
   return (
     <Base>
