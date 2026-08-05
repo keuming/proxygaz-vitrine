@@ -138,7 +138,7 @@ export function DashboardLivreur() {
   ];
 
   return (
-    <div className="fixed inset-0 flex flex-col overflow-hidden bg-surface">
+    <div className="flex h-dvh flex-col overflow-hidden bg-surface">
       <ProHeader titre="Espace livreur" sousTitre="Livraisons de bouteilles de gaz" />
 
       <div className="flex-1 overflow-y-auto overscroll-contain">

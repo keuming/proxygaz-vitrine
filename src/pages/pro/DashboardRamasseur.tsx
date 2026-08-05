@@ -154,7 +154,7 @@ export function DashboardRamasseur() {
   ];
 
   return (
-    <div className="fixed inset-0 flex flex-col overflow-hidden bg-surface">
+    <div className="flex h-dvh flex-col overflow-hidden bg-surface">
       <ProHeader titre="Espace ramasseur" sousTitre="Demandes de ramassage de poubelles" />
 
       <div className="flex-1 overflow-y-auto overscroll-contain">
