@@ -8,7 +8,10 @@ export function PublicHeader() {
   if (location.pathname.startsWith("/pro/")) return null;
 
   return (
-    <header className="border-b border-ink/10 bg-white px-4 py-3 sm:px-8">
+    <header
+      className="border-b border-ink/10 bg-white px-4 pb-3 sm:px-8"
+      style={{ paddingTop: "calc(0.75rem + env(safe-area-inset-top))" }}
+    >
       <div className="mx-auto flex max-w-5xl items-center justify-between">
         <Link to="/" className="font-display text-lg font-bold text-ink">
           PROXI<span className="text-safety-500">GAZ</span>
