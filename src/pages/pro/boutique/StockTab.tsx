@@ -7,6 +7,8 @@ interface StockItem {
   marqueGazId: string;
   marqueNom: string;
   marqueTaille: string;
+  marquePrixRecharge: string;
+  marquePrixConsigne: string | null;
   quantiteDisponible: number;
   seuilAlerte: number;
 }
@@ -15,6 +17,8 @@ interface Marque {
   id: string;
   nom: string;
   taille: string;
+  prixRecharge: string;
+  prixConsigne: string | null;
 }
 
 export function StockTab() {
@@ -49,6 +53,12 @@ export function StockTab() {
         <div className="mb-4 rounded-md bg-valve-400/10 px-4 py-3 text-sm text-valve-600">{erreur}</div>
       )}
 
+      <p className="mb-4 text-xs text-ink/40">
+        Le prix affiché ici est le prix officiel encaissé auprès du client (défini par
+        ProxiGaz) — à ne pas confondre avec votre prix d'achat auprès du fournisseur,
+        visible dans l'onglet Approvisionnements.
+      </p>
+
       {enRupture.length > 0 && (
         <div className="mb-4 rounded-md bg-safety-400/10 px-4 py-3 text-sm text-safety-600">
           ⚠ {enRupture.length} référence(s) sous le seuil d'alerte — pensez à réapprovisionner.
@@ -65,6 +75,9 @@ export function StockTab() {
                   <div className="text-sm font-medium text-ink">
                     {s.marqueNom} — {s.marqueTaille}
                     {enAlerte && <span className="ml-2 text-xs text-safety-500">● stock bas</span>}
+                  </div>
+                  <div className="font-data text-xs font-semibold text-gaz-600">
+                    {Number(s.marquePrixRecharge).toLocaleString()} FCFA
                   </div>
                   <div className="text-xs text-ink/50">Seuil d'alerte : {s.seuilAlerte}</div>
                 </div>
@@ -104,8 +117,13 @@ export function StockTab() {
             </p>
             {marquesSansStock.map((m) => (
               <Card key={m.id} className="flex items-center justify-between p-4">
-                <div className="text-sm font-medium text-ink">
-                  {m.nom} — {m.taille}
+                <div>
+                  <div className="text-sm font-medium text-ink">
+                    {m.nom} — {m.taille}
+                  </div>
+                  <div className="font-data text-xs font-semibold text-gaz-600">
+                    {Number(m.prixRecharge).toLocaleString()} FCFA
+                  </div>
                 </div>
                 <input
                   type="number"
