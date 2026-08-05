@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 
 const CLE_MASQUE = "proxigaz_install_masque";
+
+// Ces routes affichent leur propre barre de navigation fixe en bas d'écran (BottomNav) —
+// la bannière d'installation doit se décaler au-dessus pour ne pas la recouvrir.
+const ROUTES_AVEC_BOTTOM_NAV = ["/pro/boutique", "/pro/livreur", "/pro/ramasseur"];
 
 function dejaInstallee(): boolean {
   const standaloneWeb = window.matchMedia("(display-mode: standalone)").matches;
@@ -26,6 +31,8 @@ function estMobile(): boolean {
 export function InstallPrompt() {
   const [visible, setVisible] = useState(false);
   const [modeIOS, setModeIOS] = useState(false);
+  const { pathname } = useLocation();
+  const auDessusBottomNav = ROUTES_AVEC_BOTTOM_NAV.some((r) => pathname.startsWith(r));
 
   useEffect(() => {
     if (dejaInstallee()) return;
@@ -46,7 +53,11 @@ export function InstallPrompt() {
   return (
     <div
       className="fixed left-1/2 z-40 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 animate-slide-up rounded-lg bg-panel px-4 py-3 text-white shadow-xl"
-      style={{ bottom: "calc(1rem + env(safe-area-inset-bottom))" }}
+      style={{
+        bottom: auDessusBottomNav
+          ? "calc(5rem + env(safe-area-inset-bottom))"
+          : "calc(1rem + env(safe-area-inset-bottom))",
+      }}
     >
       <div className="mb-2 text-sm font-medium">Comment installer ProxiGaz</div>
 

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth, Role } from "./lib/auth";
 import { PublicHeader } from "./components/PublicHeader";
 import { Footer } from "./components/Footer";
@@ -34,10 +34,18 @@ function RequireRole({ role, children }: { role: Role; children: React.ReactNode
   return <>{children}</>;
 }
 
+const DASHBOARDS_PRO = ["/pro/boutique", "/pro/livreur", "/pro/ramasseur"];
+
 function AppRoutes() {
+  const { pathname } = useLocation();
+  // Les dashboards pro ont leur propre en-tête (ProHeader) et leur propre navigation
+  // (BottomNav) — le header/footer publics n'y ont pas leur place, ils feraient double
+  // emploi et grignoteraient l'espace précieux sur petit écran.
+  const estDashboardPro = DASHBOARDS_PRO.some((r) => pathname.startsWith(r));
+
   return (
     <div className="flex min-h-screen flex-col">
-      <PublicHeader />
+      {!estDashboardPro && <PublicHeader />}
       <main className="flex-1">
         <Routes>
         <Route path="/" element={<Home />} />
@@ -92,7 +100,7 @@ function AppRoutes() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
-      <Footer />
+      {!estDashboardPro && <Footer />}
       <InstallPrompt />
     </div>
   );
