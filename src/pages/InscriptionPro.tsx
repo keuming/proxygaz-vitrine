@@ -4,12 +4,13 @@ import { trpcMutation } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { AddressPicker, AdresseChoisie } from "../components/AddressPicker";
 
-type TypeProfil = "boutique" | "livreur" | "ramasseur";
+type TypeProfil = "boutique" | "livreur" | "ramasseur" | "societe";
 
 const CHEMINS_PAR_ROLE: Record<string, string> = {
   boutique: "/pro/boutique",
   livreur: "/pro/livreur",
   ramasseur: "/pro/ramasseur",
+  societe: "/pro/societe",
 };
 
 export function InscriptionPro() {
@@ -83,7 +84,7 @@ export function InscriptionPro() {
         });
         definirSession(data.token, data.user);
         setMessage(data.message);
-      } else {
+      } else if (type === "ramasseur") {
         const data = await trpcMutation<{
           token: string;
           user: { id: string; nom: string; role: "ramasseur" };
@@ -101,6 +102,25 @@ export function InscriptionPro() {
           type: typeRamasseur,
           nomSociete: nomSociete || undefined,
           zonesCouvertes: zonesCouvertes.split(",").map((z) => z.trim()).filter(Boolean),
+        });
+        definirSession(data.token, data.user);
+        setMessage(data.message);
+      } else if (type === "societe") {
+        const data = await trpcMutation<{
+          token: string;
+          user: { id: string; nom: string; role: "societe_livraison" };
+          message: string;
+        }>("auth.inscriptionSocieteLivraison", {
+          nom,
+          telephone,
+          codePin,
+          nomSociete,
+          pays,
+          ville,
+          commune: commune || undefined,
+          quartier: quartier || undefined,
+          latitude: latitude ?? undefined,
+          longitude: longitude ?? undefined,
         });
         definirSession(data.token, data.user);
         setMessage(data.message);
@@ -125,15 +145,15 @@ export function InscriptionPro() {
         </div>
 
         <div className="mb-4 flex rounded-lg bg-white/10 p-1">
-          {(["boutique", "livreur", "ramasseur"] as TypeProfil[]).map((t) => (
+          {(["boutique", "livreur", "ramasseur", "societe"] as TypeProfil[]).map((t) => (
             <button
               key={t}
               onClick={() => setType(t)}
-              className={`flex-1 rounded-md py-2 text-xs font-medium capitalize transition-colors ${
+              className={`flex-1 rounded-md py-2 text-[11px] font-medium transition-colors ${
                 type === t ? "bg-white text-ink" : "text-white/60"
               }`}
             >
-              {t}
+              {{ boutique: "Boutique", livreur: "Livreur", ramasseur: "Ramasseur", societe: "Société" }[t]}
             </button>
           ))}
         </div>
@@ -295,6 +315,24 @@ export function InscriptionPro() {
                     className="mb-3 w-full rounded-md border border-ink/15 px-3 py-2 text-sm focus:border-steel-500"
                     required
                   />
+                </>
+              )}
+
+              {type === "societe" && (
+                <>
+                  <label className="mb-1 block text-sm font-medium text-ink/70">
+                    Nom de la société de livraison
+                  </label>
+                  <input
+                    value={nomSociete}
+                    onChange={(e) => setNomSociete(e.target.value)}
+                    className="mb-3 w-full rounded-md border border-ink/15 px-3 py-2 text-sm focus:border-steel-500"
+                    required
+                  />
+                  <p className="mb-3 text-xs text-ink/50">
+                    Une fois votre compte validé, vous pourrez ajouter vos livreurs directement
+                    depuis votre espace — chacun aura son propre accès pour accepter ses courses.
+                  </p>
                 </>
               )}
 

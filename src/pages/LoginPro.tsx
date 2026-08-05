@@ -7,6 +7,7 @@ const CHEMINS_PAR_ROLE: Record<string, string> = {
   boutique: "/pro/boutique",
   livreur: "/pro/livreur",
   ramasseur: "/pro/ramasseur",
+  societe_livraison: "/pro/societe",
 };
 
 export function LoginPro() {
@@ -40,7 +41,7 @@ export function LoginPro() {
             PROXI<span className="text-safety-400">GAZ</span>
           </div>
           <p className="mt-1 text-sm text-white/60">Espace professionnel</p>
-          <p className="mt-1 text-xs text-white/40">Boutique de gaz · Livreur · Ramasseur</p>
+          <p className="mt-1 text-xs text-white/40">Boutique de gaz · Livreur · Ramasseur · Société de livraison</p>
         </div>
 
         <form

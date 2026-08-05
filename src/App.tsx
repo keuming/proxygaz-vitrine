@@ -14,6 +14,7 @@ import { InscriptionPro } from "./pages/InscriptionPro";
 import { DashboardBoutique } from "./pages/pro/DashboardBoutique";
 import { DashboardLivreur } from "./pages/pro/DashboardLivreur";
 import { DashboardRamasseur } from "./pages/pro/DashboardRamasseur";
+import { DashboardSociete } from "./pages/pro/DashboardSociete";
 
 function RequireRole({ role, children }: { role: Role; children: React.ReactNode }) {
   const { user } = useAuth();
@@ -27,6 +28,7 @@ function RequireRole({ role, children }: { role: Role; children: React.ReactNode
       boutique: "/pro/boutique",
       livreur: "/pro/livreur",
       ramasseur: "/pro/ramasseur",
+      societe_livraison: "/pro/societe",
       admin: "/",
     };
     return <Navigate to={chemins[user.role] ?? "/"} replace />;
@@ -34,7 +36,7 @@ function RequireRole({ role, children }: { role: Role; children: React.ReactNode
   return <>{children}</>;
 }
 
-const DASHBOARDS_PRO = ["/pro/boutique", "/pro/livreur", "/pro/ramasseur"];
+const DASHBOARDS_PRO = ["/pro/boutique", "/pro/livreur", "/pro/ramasseur", "/pro/societe"];
 
 function AppRoutes() {
   const { pathname } = useLocation();
@@ -93,6 +95,14 @@ function AppRoutes() {
           element={
             <RequireRole role="ramasseur">
               <DashboardRamasseur />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/pro/societe"
+          element={
+            <RequireRole role="societe_livraison">
+              <DashboardSociete />
             </RequireRole>
           }
         />

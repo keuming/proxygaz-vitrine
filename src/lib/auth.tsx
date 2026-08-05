@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useCallback, ReactNode } from "react";
 import { trpcMutation, setToken, clearToken } from "./api";
 
-export type Role = "client" | "boutique" | "livreur" | "ramasseur" | "admin";
+export type Role = "client" | "boutique" | "livreur" | "ramasseur" | "societe_livraison" | "admin";
 
 interface CurrentUser {
   id: string;
