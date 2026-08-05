@@ -26,6 +26,17 @@ export function IconeStock() {
   );
 }
 
+export function IconeBoutique() {
+  return (
+    <Base>
+      <path d="M4 9l1-5h14l1 5" strokeLinejoin="round" strokeLinecap="round" />
+      <path d="M4 9a2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0" strokeLinecap="round" />
+      <path d="M5 9v10h14V9" strokeLinejoin="round" />
+      <path d="M10 19v-5h4v5" strokeLinejoin="round" />
+    </Base>
+  );
+}
+
 export function IconeCaisse() {
   return (
     <Base>
