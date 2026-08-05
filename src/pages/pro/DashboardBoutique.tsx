@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { trpcQuery } from "../../lib/api";
 import { ProHeader } from "../../components/ProHeader";
 import { BottomNav } from "../../components/BottomNav";
 import { IconeCommandes, IconeStock, IconeCaisse, IconePlus } from "../../components/NavIcons";
@@ -28,6 +29,13 @@ const SOUS_ONGLETS_PLUS: { value: SousOngletPlus; label: string; description: st
 export function DashboardBoutique() {
   const [onglet, setOnglet] = useState<OngletPrincipal>("commandes");
   const [sousOngletPlus, setSousOngletPlus] = useState<SousOngletPlus | null>(null);
+  const [nomBoutique, setNomBoutique] = useState<string | null>(null);
+
+  useEffect(() => {
+    trpcQuery<{ nomBoutique: string }>("gaz.monProfilBoutique")
+      .then((r) => setNomBoutique(r.nomBoutique))
+      .catch(() => {});
+  }, []);
 
   function changerOnglet(valeur: string) {
     setOnglet(valeur as OngletPrincipal);
@@ -36,7 +44,10 @@ export function DashboardBoutique() {
 
   return (
     <div className="min-h-screen bg-surface pb-24">
-      <ProHeader titre="Espace boutique" sousTitre="Gestion complète de votre point de vente" />
+      <ProHeader
+        titre={nomBoutique ?? "Espace boutique"}
+        sousTitre="Gestion complète de votre point de vente"
+      />
 
       <div className="mx-auto max-w-4xl px-4 py-5 sm:px-8">
         {onglet === "commandes" && <CommandesTab />}
